@@ -1,6 +1,6 @@
-# 🌿 Helance - Hackathon Project
+# 🌿 Héalance - Hackathon Project
 
-Welcome to Helance: The AI Youth Resilience & Action Engine. 
+Welcome to Héalance : An AI-Powered Anonymous Hub for Youth Wellbeing & Career Progression. 
 
 ## 📂 Project Structure
 * `/frontend`: UI, React/Next.js components, Tailwind CSS. (Owned by Role 1)
