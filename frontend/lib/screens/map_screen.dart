@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter_map/flutter_map.dart'; // THE REAL MAP ENGINE
 import 'package:latlong2/latlong.dart'; // FOR GPS COORDINATES
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 const _accent = Color(0xFFFF5414);
 const _bg = Color(0xFF0B1416);
@@ -16,125 +17,86 @@ class MapScreen extends StatelessWidget {
       backgroundColor: _bg,
       body: Stack(
         children: [
-          // ── 1. THE REAL INTERACTIVE MAP ────────────────────────────
-          FlutterMap(
-            options: const MapOptions(
-              initialCenter: LatLng(
-                4.2105,
-                108.9758,
-              ), // Centers perfectly on Malaysia
-              initialZoom: 6.2, // Perfect zoom to see East and West MY
-            ),
-            children: [
-              // DARK MODE MAP TILES (Looks incredibly professional)
-              TileLayer(
-                urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
-              ),
+          // ── 1. THE REAL INTERACTIVE MAP (LIVE FROM FIREBASE) ──
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('map_nodes')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Error loading map data: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                );
+              }
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: CircularProgressIndicator(color: _accent),
+                );
+              }
 
-              // ── 2. REAL GPS NODES ──────────────────────────────────
-              MarkerLayer(
-                markers: [
-                  // Kuala Lumpur
-                  Marker(
-                    point: const LatLng(3.1390, 101.6869),
-                    width: 150,
-                    height: 80,
-                    child: _buildNode(
-                      color: Colors.redAccent,
-                      label: 'Kuala Lumpur',
-                      sublabel: 'Burnout + Dark Thoughts',
-                      pulse: true,
-                    ),
+              // Convert Firebase documents into Flutter Map Markers
+              final markers = snapshot.data!.docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+
+                // Pick color based on status
+                Color nodeColor = Colors.greenAccent;
+                bool shouldPulse = false;
+
+                // Safely extract data
+                final status = data['status'] ?? 'stable';
+                final name = data['name'] ?? 'Unknown';
+                final desc = data['desc'] ?? '';
+                final lat = (data['lat'] as num?)?.toDouble() ?? 0.0;
+                final lng = (data['lng'] as num?)?.toDouble() ?? 0.0;
+
+                if (status == 'critical') {
+                  nodeColor = Colors.redAccent;
+                  shouldPulse = true;
+                } else if (status == 'high') {
+                  nodeColor = Colors.orangeAccent;
+                  shouldPulse = true;
+                } else if (status == 'moderate') {
+                  nodeColor = Colors.yellowAccent;
+                } else if (status == 'improving') {
+                  nodeColor = Colors.lightBlueAccent;
+                }
+
+                return Marker(
+                  point: LatLng(lat, lng),
+                  width: 150,
+                  height: 80,
+                  child: _buildNode(
+                    color: nodeColor,
+                    label: name,
+                    sublabel: desc,
+                    pulse: shouldPulse,
                   ),
-                  // Subang Jaya
-                  Marker(
-                    point: const LatLng(3.0438, 101.5859),
-                    width: 150,
-                    height: 80,
-                    child: _buildNode(
-                      color: Colors.orangeAccent,
-                      label: 'Subang Jaya',
-                      sublabel: 'Burnout — No 24/7 clinic',
-                      pulse: true,
-                    ),
+                );
+              }).toList();
+
+              return FlutterMap(
+                options: const MapOptions(
+                  initialCenter: LatLng(
+                    4.2105,
+                    108.9758,
+                  ), // Centers perfectly on Malaysia
+                  initialZoom: 6.2,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                    subdomains: const ['a', 'b', 'c', 'd'],
                   ),
-                  // Penang
-                  Marker(
-                    point: const LatLng(5.4141, 100.3288),
-                    width: 150,
-                    height: 80,
-                    child: _buildNode(
-                      color: Colors.greenAccent,
-                      label: 'Penang',
-                      sublabel: 'Stable — Resources adequate',
-                      pulse: false,
-                    ),
-                  ),
-                  // Johor Bahru
-                  Marker(
-                    point: const LatLng(1.4927, 103.7414),
-                    width: 150,
-                    height: 80,
-                    child: _buildNode(
-                      color: Colors.yellowAccent,
-                      label: 'Johor Bahru',
-                      sublabel: 'Financial Anxiety rising',
-                      pulse: false,
-                    ),
-                  ),
-                  // Kota Bharu
-                  Marker(
-                    point: const LatLng(6.1254, 102.2381),
-                    width: 150,
-                    height: 80,
-                    child: _buildNode(
-                      color: Colors.redAccent,
-                      label: 'Kota Bharu',
-                      sublabel: 'Critical Desert',
-                      pulse: true,
-                    ),
-                  ),
-                  // Kuching
-                  Marker(
-                    point: const LatLng(1.5533, 110.3440),
-                    width: 150,
-                    height: 80,
-                    child: _buildNode(
-                      color: Colors.orangeAccent,
-                      label: 'Kuching',
-                      sublabel: 'Isolation + Loneliness',
-                      pulse: false,
-                    ),
-                  ),
-                  // Kota Kinabalu
-                  Marker(
-                    point: const LatLng(5.9804, 116.0735),
-                    width: 150,
-                    height: 80,
-                    child: _buildNode(
-                      color: Colors.redAccent,
-                      label: 'Kota Kinabalu',
-                      sublabel: 'Resource Desert — Sabah',
-                      pulse: true,
-                    ),
-                  ),
-                  // Miri
-                  Marker(
-                    point: const LatLng(4.4148, 114.0089),
-                    width: 150,
-                    height: 80,
-                    child: _buildNode(
-                      color: Colors.greenAccent,
-                      label: 'Miri',
-                      sublabel: 'Improving — New clinic',
-                      pulse: false,
-                    ),
-                  ),
+                  MarkerLayer(
+                    markers: markers,
+                  ), // Inject the live markers here!
                 ],
-              ),
-            ],
+              );
+            },
           ),
 
           // Subtle vignette overlay so the map edges fade nicely behind the UI
