@@ -1,18 +1,16 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Healance API",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "uuid": "^14.0.0"
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "firebase": "^10.0.0",
+    "uuid": "^9.0.0"
   }
 }
