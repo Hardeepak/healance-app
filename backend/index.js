@@ -1,32 +1,31 @@
 // backend/index.js
-const express = require('express');
-const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
+import express from 'express';
+import cors from 'cors';
+import { v4 as uuidv4 } from 'uuid';
 
-const app = express();
-app.use(cors()); // Allows your Flutter frontend to make requests
-app.use(express.json()); // Allows the server to read JSON data
+// 1. FIREBASE IMPORTS
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, setDoc, doc, updateDoc, increment } from 'firebase/firestore';
 
-// 1. DUMMY DATABASE SCHEMA
-// We are using memory arrays for the hackathon MVP.
-const db = {
-    users: [],
-    posts: [
-        {
-            id: 'post_001',
-            authorId: 'anon_user_8f72a',
-            category: 'FutureWorries',
-            title: 'I feel like I am failing my degree',
-            body: 'Everyone else gets coding so easily, but I am just stuck.',
-            location: 'Selangor',
-            resiliencePoints: 12,
-            timestamp: new Date().toISOString()
-        }
-    ]
+// 2. YOUR FIREBASE CONFIG (Pasted directly from your team)
+const firebaseConfig = {
+  apiKey: "AIzaSyDfG9CeddC0Lh-PX4htiLk2u5vMvHNXYAk",
+  authDomain: "healance-a47c2.firebaseapp.com",
+  projectId: "healance-a47c2",
+  storageBucket: "healance-a47c2.firebasestorage.app",
+  messagingSenderId: "178175487563",
+  appId: "1:178175487563:web:86a37df23ab60ba72127ce"
 };
 
-// 2. THE ANONYMITY LOGIC
-// Generates a random username if one isn't provided
+// Initialize Firebase and Firestore
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// THE ANONYMITY LOGIC
 const generateAnonName = () => {
     const prefixes = ['quiet', 'brave', 'lost', 'hoping', 'tired'];
     const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
@@ -35,33 +34,40 @@ const generateAnonName = () => {
 };
 
 // ==========================================
-// 3. API ROUTES
+// 3. API ROUTES (Now wired to Firestore)
 // ==========================================
 
-// Route: Health Check (Just to see if server is alive)
 app.get('/', (req, res) => {
-    res.json({ message: 'AuraThread/Healance Backend is running!' });
+    res.json({ message: 'Healance Backend is running LIVE with Firebase!' });
 });
 
-// Route: GET ALL POSTS (Frontend calls this to load the feed)
-app.get('/api/posts', (req, res) => {
-    // You can add filtering here later (e.g., req.query.category)
-    res.json(db.posts);
+// Route: GET ALL POSTS (Fetches from Firestore)
+app.get('/api/posts', async (req, res) => {
+    try {
+        const postsCol = collection(db, 'posts');
+        const postSnapshot = await getDocs(postsCol);
+        const postList = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Sort newest first
+        postList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        res.json(postList);
+    } catch (error) {
+        console.error("Error fetching posts: ", error);
+        res.status(500).json({ error: 'Failed to fetch posts from database' });
+    }
 });
 
-// Route: CREATE A NEW POST (Frontend sends data here when user clicks "Post")
-app.post('/api/posts', (req, res) => {
+// Route: CREATE A NEW POST (Saves to Firestore)
+app.post('/api/posts', async (req, res) => {
     const { category, title, body, location } = req.body;
 
-    // Basic validation
     if (!title || !body) {
         return res.status(400).json({ error: 'Title and body are required' });
     }
 
-    // Create the new post object
-    const newPost = {
-        id: `post_${uuidv4()}`,
-        authorId: generateAnonName(), // Enforcing anonymity!
+    const newPostId = `post_${uuidv4()}`;
+    const newPostData = {
+        authorId: generateAnonName(),
         category: category || 'General',
         title: title,
         body: body,
@@ -70,11 +76,47 @@ app.post('/api/posts', (req, res) => {
         timestamp: new Date().toISOString()
     };
 
-    // Save to our "database"
-    db.posts.unshift(newPost); // Adds to the top of the feed
+    try {
+        // Save the document to the 'posts' collection using the custom ID
+        await setDoc(doc(db, "posts", newPostId), newPostData);
+        res.status(201).json({ message: 'Post created in Firebase successfully!', post: { id: newPostId, ...newPostData } });
+    } catch (error) {
+        console.error("Error creating post: ", error);
+        res.status(500).json({ error: 'Failed to save post to database' });
+    }
+});
 
-    // Send success response back to frontend
-    res.status(201).json({ message: 'Post created successfully', post: newPost });
+// Route: ADD RESILIENCE POINTS (Upvoting in Firestore)
+app.post('/api/posts/:id/upvote', async (req, res) => {
+    const postId = req.params.id;
+    
+    try {
+        const postRef = doc(db, "posts", postId);
+        // Firebase has a built-in "increment" function so we don't accidentally overwrite data!
+        await updateDoc(postRef, {
+            resiliencePoints: increment(1)
+        });
+        res.json({ message: 'Resilience point added in Firebase!' });
+    } catch (error) {
+        console.error("Error updating points: ", error);
+        res.status(500).json({ error: 'Failed to update points' });
+    }
+});
+
+// Route: AI SAFETY INTERCEPT (Placeholder for AI Engineer)
+app.post('/api/analyze-post', (req, res) => {
+    const { body } = req.body;
+    const triggerWords = ['kill', 'suicide', 'die', 'hurt'];
+    const containsHarm = triggerWords.some(word => body?.toLowerCase().includes(word));
+
+    if (containsHarm) {
+        return res.json({ 
+            status: 'blocked', 
+            message: 'We hear you, and you are not alone. Please reach out to escalation support.',
+            triggerDetected: true
+        });
+    }
+    res.json({ status: 'safe', message: 'Post is safe to publish', triggerDetected: false });
 });
 
 // ==========================================
@@ -82,6 +124,5 @@ app.post('/api/posts', (req, res) => {
 // ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Backend Server running on http://localhost:${PORT}`);
-    console.log(`Ready for the Frontend to hit http://localhost:${PORT}/api/posts`);
+    console.log(`🚀 Firebase Backend Server running on http://localhost:${PORT}`);
 });
