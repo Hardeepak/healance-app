@@ -3,6 +3,8 @@ import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/tools_screen.dart';
 import 'package:frontend/screens/map_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 const _bg = Color(0xFF0B1416);
 const _card = Color(0xFF1A2A30);
@@ -11,7 +13,27 @@ const _textTitle = Color(0xFFD7DADC);
 const _textSub = Color(0xFF8B9DA4);
 const _border = Color(0xFF2B3C42);
 
-void main() => runApp(const HealanceApp());
+void main() async {
+  // Ensure Flutter bindings are initialized before Firebase
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Connect to our live Helance Database
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey:
+          "AIzaSyDfG9CeddC0Lh-PX4htiLk2u5vMvHNXYAk", // <-- COPY YOUR FULL API KEY HERE
+      authDomain: "healance-a47c2.firebaseapp.com",
+      projectId: "healance-a47c2",
+      storageBucket:
+          "healance-a47c2.firebasestorage.app", // <-- Double check this one from your screen
+      messagingSenderId: "178175487563",
+      appId:
+          "1:178175487563:web:86a37df23ab60ba72127ce", // <-- COPY YOUR FULL APP ID HERE
+    ),
+  );
+
+  runApp(const HealanceApp());
+}
 
 class HealanceApp extends StatelessWidget {
   const HealanceApp({super.key});
