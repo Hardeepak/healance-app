@@ -4,7 +4,7 @@ import 'package:frontend/screens/feed_screen.dart';
 import 'package:frontend/screens/tools_screen.dart';
 import 'package:frontend/screens/map_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 const _bg = Color(0xFF0B1416);
 const _card = Color(0xFF1A2A30);
@@ -17,18 +17,20 @@ void main() async {
   // Ensure Flutter bindings are initialized before Firebase
   WidgetsFlutterBinding.ensureInitialized();
 
+  await dotenv.load(fileName: ".env");
+  print("🚨 VAULT CHECK: API KEY IS -> ${dotenv.env['FIREBASE_API_KEY']}");
+
   // Connect to our live Helance Database
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey:
-          "AIzaSyDfG9CeddC0Lh-PX4htiLk2u5vMvHNXYAk", // <-- COPY YOUR FULL API KEY HERE
-      authDomain: "healance-a47c2.firebaseapp.com",
-      projectId: "healance-a47c2",
+    options: FirebaseOptions(
+      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '', // <-- COPY YOUR FULL API KEY HERE
+      authDomain: "healance-9e647.firebaseapp.com",
+      projectId: "healance-9e647",
       storageBucket:
-          "healance-a47c2.firebasestorage.app", // <-- Double check this one from your screen
-      messagingSenderId: "178175487563",
+          "healance-9e647.firebasestorage.app", // <-- Double check this one from your screen
+      messagingSenderId: "599899764817",
       appId:
-          "1:178175487563:web:86a37df23ab60ba72127ce", // <-- COPY YOUR FULL APP ID HERE
+          dotenv.env['FIREBASE_APP_ID'] ?? '',
     ),
   );
 
