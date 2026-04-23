@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 const _accent = Color(0xFFFF5414);
 const _bg = Color(0xFF0B1416);
@@ -1184,7 +1185,7 @@ final List<Post> _posts = [
     'wardrobe_dread',
     '1d',
     "Nothing feels right on my body. Every morning the same 40-minute battle.",
-    "I watch people throw on an outfit and look fine. I don't understand it.",
+    "I watch people throw on an outfit and look effortlessly fine. I don't understand it.",
     360,
     82,
     true,
@@ -1360,7 +1361,7 @@ final List<Post> _posts = [
     'push_pull',
     '7h',
     "I push people away the moment they get too close. I watch myself do it.",
-    "The pattern is obvious. The breaking is compulsive. I don't want to be alone forever.",
+    "The pattern is obvious. The breaking is compulsive. I don don't want to be alone forever.",
     690,
     163,
     true,
@@ -2006,6 +2007,49 @@ class _FeedScreenState extends State<FeedScreen> {
     }
   }
 
+  // ── THE BRIDGE TO FIREBASE (WRITE) ──
+  Future<void> submitPost(String title, String body, String category) async {
+    if (title.trim().isEmpty || body.trim().isEmpty) return;
+
+    try {
+      final CollectionReference cloudPosts = FirebaseFirestore.instance
+          .collection('posts');
+
+      // 1. Save it to the live database!
+      await cloudPosts.add({
+        'title': title,
+        'content': body,
+        'category': category,
+        'author': 'anon_user',
+        'timestamp': FieldValue.serverTimestamp(),
+        'likes': 1,
+      });
+
+      // 2. Add it to the top of the screen instantly so the user sees it
+      setState(() {
+        _posts.insert(
+          0,
+          Post(
+            category,
+            'anon_user',
+            'Just now',
+            title,
+            body,
+            1,
+            0,
+            true,
+            Colors.tealAccent, // Default color for new posts
+            'https://api.dicebear.com/8.x/notionists/png?seed=You',
+          ),
+        );
+      });
+
+      print("✅ Post successfully saved to the cloud!");
+    } catch (e) {
+      print("🚨 Error saving post: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isWide = MediaQuery.of(context).size.width > 900;
@@ -2193,7 +2237,6 @@ class _FeedScreenState extends State<FeedScreen> {
                         children: [
                           CircleAvatar(
                             radius: 14,
-                            // FIX: use the post's own unique avatar URL
                             backgroundImage: NetworkImage(post.avatarUrl),
                           ),
                           const SizedBox(width: 10),
@@ -2275,7 +2318,7 @@ class _FeedScreenState extends State<FeedScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: _border),
+          side: const BorderSide(color: _border),
         ),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -2314,7 +2357,8 @@ class _FeedScreenState extends State<FeedScreen> {
 
   // --- ROLE 1 TASK 2: POST CREATION FORM UI ---
   void _showCreatePostForm(BuildContext context) {
-    // 1. We create a controller to read what you type
+    // We need TWO controllers: one for Title, one for Body
+    final TextEditingController titleController = TextEditingController();
     final TextEditingController postController = TextEditingController();
 
     showDialog(
@@ -2324,7 +2368,7 @@ class _FeedScreenState extends State<FeedScreen> {
           backgroundColor: _card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: _border),
+            side: const BorderSide(color: _border),
           ),
           child: Container(
             width: 500,
@@ -2342,7 +2386,10 @@ class _FeedScreenState extends State<FeedScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // TITLE INPUT
                 TextField(
+                  controller: titleController, // <-- Hooked up!
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: "Title",
@@ -2357,9 +2404,9 @@ class _FeedScreenState extends State<FeedScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // 2. We attach the controller to the text box
+                // BODY INPUT
                 TextField(
-                  controller: postController,
+                  controller: postController, // <-- Hooked up!
                   maxLines: 5,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
@@ -2387,24 +2434,40 @@ class _FeedScreenState extends State<FeedScreen> {
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
-                      onPressed: () {
-                        String typedText = postController.text.toLowerCase();
-                        Navigator.pop(context); // Close the form
+                      onPressed: () async {
+                        String title = titleController.text;
+                        String body = postController.text;
+                        String lowerBody = body.toLowerCase();
 
-                        // 3. FAKE AI LOGIC FOR THE DEMO VIDEO
-                        if (typedText.contains('die') ||
-                            typedText.contains('suicide') ||
-                            typedText.contains('kill') ||
-                            typedText.contains('murder')) {
-                          _showSafetyInterceptUI(context); // Show Warning
+                        Navigator.pop(context); // Close the popup
+
+                        // 3. THE AI SAFETY TRIGGER
+                        if (lowerBody.contains('die') ||
+                            lowerBody.contains('suicide') ||
+                            lowerBody.contains('kill') ||
+                            lowerBody.contains('murder')) {
+                          _showSafetyInterceptUI(
+                            context,
+                          ); // Blocked! Show Warning.
                         } else {
-                          // Show Success
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Post published securely."),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          // Safe! Figure out the category and save it.
+                          String currentCat = _catIdx == 0
+                              ? 'Overthinking'
+                              : _categories[_catIdx];
+
+                          // Call the Firebase function!
+                          await submitPost(title, body, currentCat);
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "✅ Post published securely to the cloud!",
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -2439,8 +2502,7 @@ class _FeedScreenState extends State<FeedScreen> {
             padding: const EdgeInsets.all(32),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // <-- PUT THIS INSTEAD
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Icon(
                   Icons.warning_rounded,
@@ -2472,8 +2534,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.phone),
                     label: const Text("Connect to 24/7 Crisis Support"),
-                    onPressed:
-                        () {}, // NOTE FOR ROLE 4: Link to emergency numbers
+                    onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
                       foregroundColor: Colors.white,
@@ -2502,7 +2563,7 @@ class _FeedScreenState extends State<FeedScreen> {
     final resources =
         _sidebarResources[cat] ??
         [
-          _Resource(
+          const _Resource(
             'Headspace',
             'Learn to meditate and live mindfully. Student discounts available.',
             'Try Headspace',
@@ -2510,7 +2571,7 @@ class _FeedScreenState extends State<FeedScreen> {
             Colors.orangeAccent,
             'https://www.headspace.com/',
           ),
-          _Resource(
+          const _Resource(
             'Meetup Malaysia',
             'Find low-pressure local groups for hobbies you love.',
             'Explore Meetup',
@@ -2518,7 +2579,7 @@ class _FeedScreenState extends State<FeedScreen> {
             Colors.pinkAccent,
             'https://www.meetup.com/cities/my/',
           ),
-          _Resource(
+          const _Resource(
             'Anytime Fitness',
             'Physical health drives mental health. 3-Day Free Trial.',
             'Claim Free Trial',
@@ -2542,7 +2603,7 @@ class _FeedScreenState extends State<FeedScreen> {
       color: _card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: _border),
+        side: const BorderSide(color: _border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2712,7 +2773,6 @@ class _TrendingCard extends StatelessWidget {
           const Spacer(),
           Row(
             children: [
-              // FIX: use unique post avatar
               CircleAvatar(
                 radius: 8,
                 backgroundImage: NetworkImage(post.avatarUrl),
@@ -2797,7 +2857,7 @@ class _RichPostCard extends StatelessWidget {
       color: _card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: _border),
+        side: const BorderSide(color: _border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2811,7 +2871,7 @@ class _RichPostCard extends StatelessWidget {
                 topLeft: Radius.circular(8),
                 bottomLeft: Radius.circular(8),
               ),
-              border: Border(right: BorderSide(color: _border)),
+              border: const Border(right: BorderSide(color: _border)),
             ),
             child: Column(
               children: [
@@ -2852,7 +2912,6 @@ class _RichPostCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      // FIX: unique avatar per post
                       CircleAvatar(
                         radius: 10,
                         backgroundImage: NetworkImage(post.avatarUrl),
