@@ -13,7 +13,7 @@ class HelanceAIService {
       return true; // Let post through if AI is broken
     }
 
-    final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: _apiKey);
+    final model = GenerativeModel(model: 'gemini-2.5-flash-lite', apiKey: _apiKey);
 
     // ROLE 3: Refined prompt for high-precision safety detection.
     final prompt = '''
@@ -54,7 +54,7 @@ class HelanceAIService {
 
     // ROLE 3: Refined persona with strict medical boundaries and conversational empathy.
     final model = GenerativeModel(
-      model: 'gemini-1.5-flash', // Using 1.5-flash for reliable context handling
+      model: 'gemini-2.5-flash-lite', // Using 2.5-flash-lite for validated persona performance
       apiKey: _apiKey,
       systemInstruction: Content.system(
         'You are Helance, an empathetic mental health AI sidekick for university students. '
