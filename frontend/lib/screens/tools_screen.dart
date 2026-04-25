@@ -85,6 +85,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
     _scrollToBottom();
 
     // Get response from our hardened AI Service
+    // Pass the user's emotional history (last 3 posts) for deep context!
     final response = await HelanceAIService.getChatbotResponse(
       text,
       history: _chatHistory,
@@ -512,13 +513,15 @@ class _ToolsScreenState extends State<ToolsScreen> {
                   const Divider(height: 40, color: _border),
 
                   // 2. UPDATED: Generates the list dynamically and passes the index
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _roadmapSteps.length,
-                      itemBuilder: (context, index) {
-                        return _step(index);
-                      },
-                    ),
+                  // FIX: Removed Expanded and added shrinkWrap/NeverScrollableScrollPhysics 
+                  // to prevent infinite height crashes on mobile screens.
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _roadmapSteps.length,
+                    itemBuilder: (context, index) {
+                      return _step(index);
+                    },
                   ),
                 ],
               ),
