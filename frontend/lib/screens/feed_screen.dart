@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:frontend/services/ai_service.dart';
 
 const _accent = Color(0xFFFF5414);
 const _bg = Color(0xFF0B1416);

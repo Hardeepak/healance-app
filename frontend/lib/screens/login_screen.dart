@@ -384,20 +384,14 @@ Future<void> seedMapDatabase() async {
     print("🚨 PULSE 2: Connected to Firestore instance!");
 
     final dummyData = [
-      {
-        "name": "Kuala Lumpur",
-        "desc": "Burnout + Dark Thoughts",
-        "lat": 3.1390,
-        "lng": 101.6869,
-        "status": "critical",
-      },
-      {
-        "name": "Subang Jaya",
-        "desc": "Burnout — No 24/7 clinic",
-        "lat": 3.0438,
-        "lng": 101.5859,
-        "status": "high",
-      },
+      {"name": "Kuala Lumpur", "desc": "Burnout + Dark Thoughts", "lat": 3.1390, "lng": 101.6869, "status": "critical"},
+      {"name": "Subang Jaya", "desc": "Burnout — No 24/7 clinic", "lat": 3.0438, "lng": 101.5859, "status": "high"},
+      {"name": "Penang", "desc": "Stable — Resources adequate", "lat": 5.4141, "lng": 100.3288, "status": "stable"},
+      {"name": "Johor Bahru", "desc": "Financial Anxiety rising", "lat": 1.4927, "lng": 103.7414, "status": "moderate"},
+      {"name": "Kota Bharu", "desc": "Critical Desert", "lat": 6.1254, "lng": 102.2381, "status": "critical"},
+      {"name": "Kuching", "desc": "Isolation + Loneliness", "lat": 1.5533, "lng": 110.3440, "status": "high"},
+      {"name": "Kota Kinabalu", "desc": "Resource Desert — Sabah", "lat": 5.9804, "lng": 116.0735, "status": "critical"},
+      {"name": "Miri", "desc": "Improving — New clinic", "lat": 4.4148, "lng": 114.0089, "status": "improving"},
     ];
 
     print("🚨 PULSE 3: Starting to upload data...");
