@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:frontend/services/ai_service.dart';
 
 const _accent = Color(0xFFFF5414);
 const _bg = Color(0xFF0B1416);
@@ -7,8 +9,69 @@ const _border = Color(0xFF2B3C42);
 const _textTitle = Color(0xFFD7DADC);
 const _textSub = Color(0xFF8B9DA4);
 
-class ToolsScreen extends StatelessWidget {
+class ToolsScreen extends StatefulWidget {
   const ToolsScreen({super.key});
+
+  @override
+  State<ToolsScreen> createState() => _ToolsScreenState();
+}
+
+class _ToolsScreenState extends State<ToolsScreen> {
+  final TextEditingController _msgController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  
+  // Local state for the UI bubbles
+  final List<Map<String, dynamic>> _messages = [
+    {
+      "text": "Hi! I'm Helance, your AI sidekick. I noticed you've been exploring the community lately. How are you feeling today?",
+      "isUser": false
+    },
+  ];
+
+  // Persistent history for the Gemini SDK context
+  final List<Content> _chatHistory = [];
+  bool _isTyping = false;
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _handleSend() async {
+    final text = _msgController.text.trim();
+    if (text.isEmpty) return;
+
+    _msgController.clear();
+    setState(() {
+      _messages.add({"text": text, "isUser": true});
+      _isTyping = true;
+    });
+    _scrollToBottom();
+
+    // 1. Get response from our hardened AI Service
+    final response = await HelanceAIService.getChatbotResponse(
+      text, 
+      history: _chatHistory,
+    );
+
+    // 2. Update local UI state
+    setState(() {
+      _messages.add({"text": response, "isUser": false});
+      _isTyping = false;
+      
+      // 3. Update persistent history for next turn context
+      _chatHistory.add(Content.text(text)); // What user said
+      _chatHistory.add(Content.model([TextPart(response)])); // What AI said
+    });
+    _scrollToBottom();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +105,7 @@ class ToolsScreen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(flex: 3, child: _buildAIChat()),
+                        Expanded(flex: 4, child: _buildAIChat()),
                         const SizedBox(width: 24),
                         Expanded(flex: 3, child: _buildHealthAnalytics()),
                         const SizedBox(width: 24),
@@ -76,7 +139,7 @@ class ToolsScreen extends StatelessWidget {
       color: _card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: _border),
+        side: const BorderSide(color: _border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,58 +148,63 @@ class ToolsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.02),
-              border: Border(bottom: BorderSide(color: _border)),
+              border: const Border(bottom: BorderSide(color: _border)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.auto_awesome, color: Colors.amber),
-                SizedBox(width: 12),
-                Text(
-                  "Your AI Companion",
+                const Icon(Icons.auto_awesome, color: Colors.amber, size: 20),
+                const SizedBox(width: 12),
+                const Text(
+                  "Helance Sidekick",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     color: _textTitle,
                   ),
                 ),
+                const Spacer(),
+                if (_isTyping)
+                  const Text(
+                    "typing...",
+                    style: TextStyle(fontSize: 12, color: Colors.amber, fontStyle: FontStyle.italic),
+                  ),
               ],
             ),
           ),
           Expanded(
-            child: Padding(
+            child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  _chatBubble(
-                    "Hi! I noticed your recent posts in #AcademicBurnout. It seems like you've been running on low energy this week. Do you want to vent about it, or look at some study tools?",
-                    isUser: false,
-                  ),
-                  const SizedBox(height: 12),
-                  _chatBubble(
-                    "I'm just so overwhelmed with my assignments right now.",
-                    isUser: true,
-                  ),
-                  const SizedBox(height: 12),
-                  _chatBubble(
-                    "That is completely valid. It's a huge workload. Should we break it down into 3 smaller tasks for today, or do you need a completely screen-free break first?",
-                    isUser: false,
-                  ),
-                  const SizedBox(height: 24),
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: "Type a response...",
-                      hintStyle: const TextStyle(color: _textSub),
-                      suffixIcon: const Icon(Icons.send, color: _accent),
-                      filled: true,
-                      fillColor: _bg,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-                ],
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final m = _messages[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _chatBubble(m['text'], isUser: m['isUser']),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: _msgController,
+              onSubmitted: (_) => _handleSend(),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              decoration: InputDecoration(
+                hintText: "Talk to Helance...",
+                hintStyle: const TextStyle(color: _textSub),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.send_rounded, color: _accent),
+                  onPressed: _handleSend,
+                ),
+                filled: true,
+                fillColor: _bg,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
