@@ -118,7 +118,40 @@ app.post('/api/analyze-post', (req, res) => {
     }
     res.json({ status: 'safe', message: 'Post is safe to publish', triggerDetected: false });
 });
+// Route: GET MAP RESOURCES & STRESS DATA
+app.get('/api/map-data', async (req, res) => {
+    try {
+        // For the MVP, we send a static array of calculated "Resource Deserts".
+        const mapNodes = [
+            { id: 1, location: "Kuala Lumpur", lat: 3.1390, lng: 101.6869, status: "Critical", label: "Burnout + Dark Thoughts" },
+            { id: 2, location: "Subang Jaya", lat: 3.0438, lng: 101.5859, status: "High Tension", label: "Burnout - No 24/7 clinic" },
+            { id: 3, location: "Penang", lat: 5.4141, lng: 100.3288, status: "Stable", label: "Resources adequate" },
+            { id: 4, location: "Kota Bharu", lat: 6.1254, lng: 102.2381, status: "Critical", label: "Critical Desert" }
+        ];
+        res.json(mapNodes);
+    } catch (error) {
+        console.error("Error fetching map data: ", error);
+        res.status(500).json({ error: 'Failed to fetch map data' });
+    }
+});
 
+// Route: AI SIDEKICK CHAT (Placeholder for Role 3)
+app.post('/api/chat', async (req, res) => {
+    const { message, history } = req.body;
+
+    if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+    }
+
+    try {
+        // TODO for Role 3: Connect to Gemini/OpenAI API here.
+        const dummyResponse = `I hear you. You said: "${message}". Have you considered taking a 5-minute screen break?`;
+        res.json({ reply: dummyResponse });
+    } catch (error) {
+        console.error("AI Chat Error: ", error);
+        res.status(500).json({ error: 'AI is currently resting.' });
+    }
+});
 // ==========================================
 // 4. START THE SERVER
 // ==========================================
