@@ -20,17 +20,15 @@ void main() async {
   await dotenv.load(fileName: ".env");
   print("🚨 VAULT CHECK: API KEY IS -> ${dotenv.env['FIREBASE_API_KEY']}");
 
-  // Connect to our live Helance Database
+  // Connect to our live Héalance Database
   await Firebase.initializeApp(
     options: FirebaseOptions(
-      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '', // <-- COPY YOUR FULL API KEY HERE
+      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '', // <-- pulls from .env
       authDomain: "healance-9e647.firebaseapp.com",
       projectId: "healance-9e647",
-      storageBucket:
-          "healance-9e647.firebasestorage.app", // <-- Double check this one from your screen
+      storageBucket: "healance-9e647.firebasestorage.app",
       messagingSenderId: "599899764817",
-      appId:
-          dotenv.env['FIREBASE_APP_ID'] ?? '',
+      appId: dotenv.env['FIREBASE_APP_ID'] ?? '', // <-- pulls from .env
     ),
   );
 
