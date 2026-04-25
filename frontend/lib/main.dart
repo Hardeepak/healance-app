@@ -22,16 +22,13 @@ void main() async {
 
   // Connect to our live Héalance Database
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-
-      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '', // <-- COPY YOUR FULL API KEY HERE
+    options: FirebaseOptions(
+      apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '', // <-- pulls from .env
       authDomain: "healance-9e647.firebaseapp.com",
       projectId: "healance-9e647",
-      storageBucket:
-          "healance-9e647.firebasestorage.app", // <-- Double check this one from your screen
+      storageBucket: "healance-9e647.firebasestorage.app",
       messagingSenderId: "599899764817",
-      appId:
-          dotenv.env['FIREBASE_APP_ID'] ?? '',
+      appId: dotenv.env['FIREBASE_APP_ID'] ?? '', // <-- pulls from .env
     ),
   );
 
