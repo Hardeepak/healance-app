@@ -8,41 +8,53 @@ class HelanceAIService {
   // ── FUNCTION 1: THE SAFETY INTERCEPTOR ──
   // Checks if a feed post contains severe self-harm language.
   static Future<bool> isPostSafe(String text) async {
+    final result = await analyzePost(text);
+    return result['isSafe'] as bool;
+  }
+
+  // ── FUNCTION 3: THE ANALYZER (SAFETY + CATEGORY) ──
+  // Determines if a post is safe AND what category it belongs to.
+  static Future<Map<String, dynamic>> analyzePost(String text) async {
     if (_apiKey.isEmpty) {
-      print("🚨 GEMINI KEY MISSING!");
-      return true; // Let post through if AI is broken
+      return {'isSafe': true, 'category': 'General'};
     }
 
     final model = GenerativeModel(model: 'gemini-2.5-flash-lite', apiKey: _apiKey);
 
-    // ROLE 3: Refined prompt for high-precision safety detection.
     final prompt = '''
-    SYSTEM: You are a high-precision safety classifier for a university mental health forum.
-    TASK: Analyze the USER_TEXT below for immediate, severe risks of:
-    1. Suicidal ideation or self-harm.
-    2. Intent to perform violence against others.
-    3. Severe clinical crisis requiring immediate intervention.
+    SYSTEM: You are an AI moderator and classifier for a university mental health forum.
+    TASK: Analyze the USER_TEXT and return a JSON object.
+    
+    CATEGORIES: [Academic Burnout, Loneliness, Overthinking, Bullying, Friendship Drama, Financial Anxiety, Career Anxiety, Dark Thoughts, Body Insecurity, Family Issues, Social Media Trap, Future Doubts, Trauma, Phone Addiction, Procrastination, Feeling Unattractive, No One To Talk To, Identity & Self-Worth, Sleep Struggles, Relationships]
 
-    CRITICAL INSTRUCTIONS:
-    - Respond with ONLY the word "YES" if a risk is detected.
-    - Respond with ONLY the word "NO" if the text is safe or contains general venting without self-harm intent.
-    - Do not provide explanations. Do not use punctuation.
-    - Example of "NO": "I failed my exam and I want to cry."
-    - Example of "YES": "I don't want to be here anymore, I have a plan for tonight."
+    RULES:
+    1. Determine if the text indicates immediate, severe risk of self-harm or violence (isSafe: true/false).
+    2. Select the most relevant category from the list above.
+    3. Return ONLY the JSON object.
+
+    Example Safe: {"isSafe": true, "category": "Academic Burnout"}
+    Example Unsafe: {"isSafe": false, "category": "Dark Thoughts"}
 
     USER_TEXT: "$text"
     ''';
 
     try {
       final response = await model.generateContent([Content.text(prompt)]);
-      final answer = response.text?.trim().toUpperCase() ?? 'NO';
+      final cleanJson = response.text?.replaceAll('```json', '').replaceAll('```', '').trim() ?? '';
+      
+      // Basic manual parsing to avoid heavy dependencies in a hackathon
+      final bool isSafe = !cleanJson.contains('"isSafe": false');
+      String category = 'General';
+      
+      final catMatch = RegExp(r'"category":\s*"([^"]+)"').firstMatch(cleanJson);
+      if (catMatch != null) {
+        category = catMatch.group(1) ?? 'General';
+      }
 
-      // If AI says YES (danger), return false (not safe). Otherwise true.
-      // We check if it starts with YES or contains YES to be robust against "YES." or "YES\n"
-      return !answer.startsWith('YES');
+      return {'isSafe': isSafe, 'category': category};
     } catch (e) {
-      print('🚨 AI Safety Error: $e');
-      return true;
+      print('🚨 AI Analysis Error: $e');
+      return {'isSafe': true, 'category': 'General'};
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:frontend/services/ai_service.dart';
 
 const _accent = Color(0xFFFF5414);
 const _bg = Color(0xFF0B1416);
@@ -2007,8 +2008,35 @@ class _FeedScreenState extends State<FeedScreen> {
     }
   }
 
+  Color _getColorForCategory(String category) {
+    switch (category) {
+      // Find the tagColor from existing posts or fallback to a default
+      case 'Academic Burnout': return Colors.redAccent;
+      case 'Loneliness': return Colors.blueGrey;
+      case 'Overthinking': return Colors.tealAccent;
+      case 'Bullying': return Colors.red;
+      case 'Friendship Drama': return Colors.purpleAccent;
+      case 'Financial Anxiety': return Colors.green;
+      case 'Career Anxiety': return Colors.indigoAccent;
+      case 'Dark Thoughts': return Colors.red;
+      case 'Body Insecurity': return Colors.pinkAccent;
+      case 'Family Issues': return Colors.deepOrange;
+      case 'Social Media Trap': return Colors.cyan;
+      case 'Future Doubts': return Colors.amber;
+      case 'Trauma': return Colors.deepPurple;
+      case 'Phone Addiction': return Colors.lightGreen;
+      case 'Procrastination': return Colors.orange;
+      case 'Feeling Unattractive': return Colors.pink;
+      case 'No One To Talk To': return Colors.teal;
+      case 'Identity & Self-Worth': return Colors.limeAccent;
+      case 'Sleep Struggles': return Colors.indigoAccent;
+      case 'Relationships': return const Color(0xFFFF4D7D);
+      default: return Colors.tealAccent;
+    }
+  }
+
   // ── THE BRIDGE TO FIREBASE (WRITE) ──
-  Future<void> submitPost(String title, String body, String category) async {
+  Future<void> submitPost(String title, String body, String category, {bool aiVerified = false}) async {
     if (title.trim().isEmpty || body.trim().isEmpty) return;
 
     try {
@@ -2023,6 +2051,7 @@ class _FeedScreenState extends State<FeedScreen> {
         'author': 'anon_user',
         'timestamp': FieldValue.serverTimestamp(),
         'likes': 1,
+        'ai_verified': aiVerified,
       });
 
       // 2. Add it to the top of the screen instantly so the user sees it
@@ -2037,8 +2066,8 @@ class _FeedScreenState extends State<FeedScreen> {
             body,
             1,
             0,
-            true,
-            Colors.tealAccent, // Default color for new posts
+            aiVerified,
+            _getColorForCategory(category),
             'https://api.dicebear.com/8.x/notionists/png?seed=You',
           ),
         );
@@ -2435,34 +2464,41 @@ class _FeedScreenState extends State<FeedScreen> {
                     const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: () async {
-                        String title = titleController.text;
-                        String body = postController.text;
-                        String lowerBody = body.toLowerCase();
+                        String title = titleController.text.trim();
+                        String body = postController.text.trim();
 
-                        Navigator.pop(context); // Close the popup
+                        if (title.isEmpty || body.isEmpty) return;
 
-                        // 3. THE AI SAFETY TRIGGER
-                        if (lowerBody.contains('die') ||
-                            lowerBody.contains('suicide') ||
-                            lowerBody.contains('kill') ||
-                            lowerBody.contains('murder')) {
-                          _showSafetyInterceptUI(
-                            context,
-                          ); // Blocked! Show Warning.
+                        // Show "AI is thinking" loading overlay
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(color: _accent),
+                          ),
+                        );
+
+                        // 3. THE AI ANALYZER (Safety + Category)
+                        final analysis = await HelanceAIService.analyzePost(body);
+                        
+                        if (!context.mounted) return;
+                        Navigator.pop(context); // Close loading
+                        Navigator.pop(context); // Close the form
+
+                        if (analysis['isSafe'] == false) {
+                          _showSafetyInterceptUI(context); // Blocked!
                         } else {
-                          // Safe! Figure out the category and save it.
-                          String currentCat = _catIdx == 0
-                              ? 'Overthinking'
-                              : _categories[_catIdx];
+                          // Safe! Use AI's category classification
+                          String aiCategory = analysis['category'];
 
-                          // Call the Firebase function!
-                          await submitPost(title, body, currentCat);
+                          // Call the Firebase function with AI verification!
+                          await submitPost(title, body, aiCategory, aiVerified: true);
 
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  "✅ Post published securely to the cloud!",
+                                  "✅ AI Verified as #$aiCategory & published!",
                                 ),
                                 backgroundColor: Colors.green,
                               ),
