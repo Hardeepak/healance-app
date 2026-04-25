@@ -1,64 +1,104 @@
-# 🚀 Héalance - Team Dashboard & Action Plan
+# 🚀 Héalance - Anonymous AI-Powered Mental Health for Students
 
-Welcome to the central hub! Below is the current status of our hackathon project. Find your role, see what is done, check what you need to do next, and look at the "Where to work" paths so you know exactly which files to edit.
-
----
-
-## 🛠️ How to Access & Run the Project
-
-**🚨 CRITICAL: The `.env` Vault**
-We have hidden our Firebase and Gemini API keys for security. If you try to run the app without the `.env` file, **it will crash.**
-1. Ask the Integrator (Role 4) to DM you the `.env` file text.
-2. Create a file named exactly `.env` inside the `frontend/` folder (next to `pubspec.yaml`).
-3. Paste the keys inside and save. **Do not commit this file!**
-
-**To run the frontend app:**
-```bash
-cd frontend
-flutter pub get
-flutter run -d chrome
-```
+Héalance is a next-generation mental health platform designed specifically for university students. It bridges the gap between isolation and professional help by providing an anonymous, AI-protected community where students can connect without the fear of exposure.
 
 ---
 
-## 📋 Role Assignments & Checklists
+## 🛑 The Problem Statement
+University students are facing a **silent crisis**. Burnout, academic pressure, and loneliness are at an all-time high, yet many students avoid seeking help due to:
+1.  **Stigma:** Fear of being judged by peers or faculty.
+2.  **Exposure:** Concerns about privacy on social media.
+3.  **Isolation:** Not knowing where to start or who to talk to.
+4.  **Resource Deserts:** Difficulty finding local, accessible mental health support.
+
+## ✅ Our Solution
+Héalance provides a **Safe Haven** through three core pillars:
+*   **Anonymity First:** Users are identified only by randomly generated Dicebear avatars and anonymous handles.
+*   **AI Protection:** Every post is screened by our **Gemini-powered Safety Interceptor** before it ever reaches the community.
+*   **Intelligent Companion:** Our AI Sidekick, **Héalance**, provides 24/7 empathetic support and "remembers" user struggles to offer personalized guidance.
+
+---
+
+## ✨ Key Features in Detail
+
+### 1. The Protected Community Feed
+*   **Anonymous Posting:** Share struggles about burnout or anxiety without revealing identity.
+*   **AI Auto-Categorization:** Our AI automatically tags posts (e.g., #AcademicBurnout, #Loneliness) based on contextual understanding.
+*   **AI Verified Badge:** A golden trust indicator showing that a post has been cleared by our safety moderator.
+*   **Resilience Points:** A supportive upvote system where students "uplift" each other's stories.
+
+### 2. The AI Safety Interceptor
+*   **Real-Time Screening:** Implemented using **Gemini 2.5 Flash Lite**. It detects high-risk language (self-harm, crisis) with high precision.
+*   **Crisis Redirection:** If a post is flagged, the user is immediately diverted to a compassionate "Intercept UI" with one-tap access to 24/7 crisis hotlines.
+
+### 3. Héalance: The AI Sidekick
+*   **Empathetic Persona:** A warm, university-focused companion that maintains strict medical boundaries.
+*   **Emotional Memory:** Héalance "remembers" and analyzes your last 3 community posts to understand your journey over time and provide deeper, non-generic support.
+*   **Contextual Chat:** Full conversation history support for natural, flowing dialogue.
+
+### 4. Wellbeing Dashboard & Resource Map
+*   **Mental Battery:** Visual tracking of energy levels based on self-reported data.
+*   **Sleep Pattern Alerts:** Anonymous tracking of late-night app activity to highlight potential sleep issues.
+*   **Local Resource Nodes:** A map identifying "Stable Zones" (counseling centers) and "Resource Deserts" (areas lacking support).
+
+---
+
+## 🛠️ The Full Tech Stack
+*   **Frontend:** Flutter Web (Dart) – Material 3 Design & Responsive Layouts.
+*   **Backend:** Node.js, Express – RESTful API for community data.
+*   **Database:** Firebase Firestore – Real-time data synchronization.
+*   **AI Engine:** Google Gemini (2.5 Flash Lite) via `google_generative_ai`.
+*   **Security:** `flutter_dotenv` for secret management and strict `.gitignore` protocols.
+*   **Avatars:** Dicebear API integration for anonymous identity generation.
+
+---
+
+## 📋 Role Assignments & Detailed Checklist
 
 ### 🎨 Role 1: Frontend Developer (UI/UX)
-**📍 Where to work:** `frontend/lib/screens/`
+**📍 Focus:** Interactive components and user experience.
+- [x] **Foundation:** Build the Flutter navigation (BottomNavBar: Feed, Map, Tools).
+- [x] **Onboarding:** Create the Login Screen with anonymous avatar selection logic.
+- [x] **Community:** Build the `RichPostCard` UI with "Resilience Point" interactions.
+- [x] **Feed Logic:** Implement category filtering and the "Trending Today" sidebar.
+- [x] **Chat UI:** Design message bubbles (User vs. Héalance) and auto-scroll behavior.
+- [x] **Moderation UI:** Build the **Safety Intercept Modal** and crisis resource buttons.
+- [x] **Dashboard:** Implement the "Mental Battery" and "Wellbeing Roadmap" visuals.
 
-- [x] Build the Flutter app foundation & navigation structure.
-- [x] Create `login_screen.dart` with anonymous avatar selection.
-- [x] Build `feed_screen.dart` UI (trending algorithm, post cards).
-- [x] Build `map_screen.dart` UI to display resource nodes.
-- [x] Connect the "Create Post" button to the live Firebase database.
-- [ ] **PENDING:** Build the Chat UI in `tools_screen.dart` (Add chat bubbles and a text input box for the AI Sidekick).
-- [ ] **PENDING:** Swap the fake safety logic in `feed_screen.dart` with the real `HelanceAIService.isPostSafe()` function.
-
-### ⚙️ Role 2: Backend / Node.js Developer
-**📍 Where to work:** `backend/src/`
-
-- [x] Initialize the `backend` folder structure.
-- [x] Set up the base Node.js / TypeScript environment (`src/index.ts`).
-- [ ] **PENDING:** Write the actual backend server logic for our custom Genkit flow (if applicable).
-- [ ] **PENDING:** Ensure the backend server runs without crashing so the frontend can communicate with it.
+### ⚙️ Role 2: Backend Developer
+**📍 Focus:** Server reliability and data integrity.
+- [x] **Architecture:** Initialize Node.js Express server and Firestore SDK.
+- [x] **Post API:** Implement `GET /api/posts` and `POST /api/posts` endpoints.
+- [x] **Resilience Logic:** Build the Firebase `increment` function for post upvotes.
+- [x] **Data Hardening:** Add validation to prevent empty or malformed posts from reaching the cloud.
+- [x] **Sorting:** Ensure the API returns posts by `timestamp` to keep the feed fresh.
 
 ### 🧠 Role 3: AI Engineer (Prompt Designer)
-**📍 Where to work:** `frontend/lib/services/ai_service.dart`
+**📍 Focus:** Intelligence, safety, and persona.
+- [x] **SDK Integration:** Connect `google_generative_ai` and secure API keys in the `.env` vault.
+- [x] **Safety Interceptor:** Engineer the high-precision "YES/NO" safety classification prompt.
+- [x] **Auto-Classifier:** Build the JSON-based categorization engine for the Feed.
+- [x] **Persona Design:** Define "Héalance" as a warm, supportive student sidekick.
+- [x] **Memory Bridge:** Implement the **Emotional Memory** logic to share user history with the AI.
+- [x] **Robustness:** Added "Fail-Open" logic and compassionate fallback messages for API timeouts.
 
-- [x] Generate Google Gemini API keys.
-- [x] Receive the `ai_service.dart` bridge file to work in.
-- [ ] **PENDING:** Define the safety logic parameters in the `isPostSafe` function so it accurately flags self-harm language.
-- [ ] **PENDING:** Write the exact instructions for the Gemini Chatbot in the `getChatbotResponse` function (define its personality, tone, and medical boundaries).
+### 🌉 Role 4: Integrator / Project Manager
+**📍 Focus:** End-to-end flow and project delivery.
+- [x] **Security:** Establish the `.env` vault and coordinate secret management.
+- [x] **Database:** Seed Firestore with initial map markers and sample posts for the demo.
+- [x] **Bridges:** Connect the Frontend UI text controllers to the Backend API and AI Service.
+- [x] **State Management:** Implement the global `UserActivityTracker` to sync data across screens.
+- [x] **Documentation:** Finalize `README.md` and `GEMINI.md` for the pitch.
+- [ ] **Pitch Prep:** Record the "Golden Path" demo video (Login -> Post -> Trigger Safety -> Chat).
 
-### 🌉 Role 4: Integrator / Project Manager (YOU)
-**📍 Where to work:** Project-wide (`GitHub`, `Firebase`, `Integrations`)
+---
 
-- [x] Set up GitHub Monorepo and version control rules.
-- [x] Handle the API Key security crisis and establish the `.env` vault.
-- [x] Set up Firebase Firestore and seed the live map database.
-- [x] Write the Flutter bridge connecting the Map UI to the database (Read).
-- [x] Write the Flutter bridge connecting the Feed UI to the database (Write).
-- [x] Install the Gemini SDK and build the `ai_service.dart` foundation.
-- [ ] **PENDING:** Connect Role 1's Chat UI to Role 3's AI logic.
-- [ ] **PENDING:** Final QA test of the entire app flow.
-- [ ] **PENDING:** Plan, script, and record the 3-minute pitch demo.
+## 🚀 Getting Started
+
+1.  **Clone the Repo:** `git clone https://github.com/Hardeepak/healance-app.git`
+2.  **Setup Secrets:** Create `frontend/.env` and add:
+    *   `GEMINI_API_KEY=your_key`
+    *   `FIREBASE_API_KEY=your_key`
+    *   `FIREBASE_APP_ID=your_id`
+3.  **Run Backend:** `cd backend && npm start`
+4.  **Run Frontend:** `cd frontend && flutter run -d chrome`
