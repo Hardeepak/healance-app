@@ -56,9 +56,11 @@ class _ToolsScreenState extends State<ToolsScreen> {
     _scrollToBottom();
 
     // 1. Get response from our hardened AI Service
+    // Pass the user's emotional history (last 3 posts) for deep context!
     final response = await HelanceAIService.getChatbotResponse(
       text, 
       history: _chatHistory,
+      recentUserPosts: UserActivityTracker.lastThreePosts,
     );
 
     // 2. Update local UI state

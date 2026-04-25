@@ -60,20 +60,33 @@ class HelanceAIService {
 
   // ── FUNCTION 2: THE CHATBOT ──
   // Generates warm, empathetic replies for the tools_screen.dart Chat UI.
-  // Now supports conversation history for context!
-  static Future<String> getChatbotResponse(String userMessage, {List<Content>? history}) async {
+  // Now supports conversation history AND the user's emotional history (last 3 posts).
+  static Future<String> getChatbotResponse(
+    String userMessage, {
+    List<Content>? history,
+    List<Map<String, String>>? recentUserPosts,
+  }) async {
     if (_apiKey.isEmpty) return "Error: AI vault key is missing.";
 
-    // ROLE 3: Refined persona with strict medical boundaries and conversational empathy.
+    // Format the emotional context for the AI
+    String activityContext = "";
+    if (recentUserPosts != null && recentUserPosts.isNotEmpty) {
+      activityContext = "\n\nUSER'S EMOTIONAL HISTORY (Last 3 Posts):\n";
+      for (var post in recentUserPosts) {
+        activityContext += "- [${post['time']}]: \"${post['text']}\"\n";
+      }
+      activityContext += "\nINSTRUCTION: Use this history to provide more personal help. If you notice a pattern (e.g. posting late at night or recurring themes), mention it supportively.";
+    }
+
     final model = GenerativeModel(
-      model: 'gemini-2.5-flash-lite', // Using 2.5-flash-lite for validated persona performance
+      model: 'gemini-2.5-flash-lite',
       apiKey: _apiKey,
       systemInstruction: Content.system(
         'You are Helance, an empathetic mental health AI sidekick for university students. '
-        'YOUR PERSONALITY: Warm, validating, concise, and professional but approachable. '
+        'YOUR PERSONALITY: Warm, validating, and observant. '
         'YOUR BOUNDARIES: You are NOT a doctor. You CANNOT diagnose or prescribe. '
-        'If a user is in acute crisis, you MUST provide help resources immediately. '
         'KEEP RESPONSES UNDER 3 SENTENCES. Always prioritize validating feelings over giving advice.'
+        '$activityContext'
       ),
     );
 
