@@ -20,9 +20,10 @@ void main() async {
   await dotenv.load(fileName: ".env");
   print("🚨 VAULT CHECK: API KEY IS -> ${dotenv.env['FIREBASE_API_KEY']}");
 
-  // Connect to our live Helance Database
+  // Connect to our live Héalance Database
   await Firebase.initializeApp(
-    options: FirebaseOptions(
+    options: const FirebaseOptions(
+
       apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '', // <-- COPY YOUR FULL API KEY HERE
       authDomain: "healance-9e647.firebaseapp.com",
       projectId: "healance-9e647",

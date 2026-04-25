@@ -38,7 +38,7 @@ const generateAnonName = () => {
 // ==========================================
 
 app.get('/', (req, res) => {
-    res.json({ message: 'Healance Backend is running LIVE with Firebase!' });
+    res.json({ message: 'Héalance Backend is running LIVE with Firebase!' });
 });
 
 // Route: GET ALL POSTS (Fetches from Firestore)

@@ -23,7 +23,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
   // Local state for the UI bubbles
   final List<Map<String, dynamic>> _messages = [
     {
-      "text": "Hi! I'm Helance, your AI sidekick. I noticed you've been exploring the community lately. How are you feeling today?",
+      "text": "Hi! I'm Héalance, your AI sidekick. I noticed you've been exploring the community lately. How are you feeling today?",
       "isUser": false
     },
   ];
@@ -157,7 +157,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 const Icon(Icons.auto_awesome, color: Colors.amber, size: 20),
                 const SizedBox(width: 12),
                 const Text(
-                  "Helance Sidekick",
+                  "Héalance Sidekick",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

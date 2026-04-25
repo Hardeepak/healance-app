@@ -15,7 +15,7 @@ University students are facing a **silent crisis**. Burnout, academic pressure, 
 Héalance provides a **Safe Haven** through three core pillars:
 *   **Anonymity First:** Users are identified only by randomly generated Dicebear avatars and anonymous handles.
 *   **AI Protection:** Every post is screened by our **Gemini-powered Safety Interceptor** before it ever reaches the community.
-*   **Intelligent Companion:** Our AI Sidekick, **Helance**, provides 24/7 empathetic support and "remembers" user struggles to offer personalized guidance.
+*   **Intelligent Companion:** Our AI Sidekick, **Héalance**, provides 24/7 empathetic support and "remembers" user struggles to offer personalized guidance.
 
 ---
 
@@ -31,9 +31,9 @@ Héalance provides a **Safe Haven** through three core pillars:
 *   **Real-Time Screening:** Implemented using **Gemini 2.5 Flash Lite**. It detects high-risk language (self-harm, crisis) with high precision.
 *   **Crisis Redirection:** If a post is flagged, the user is immediately diverted to a compassionate "Intercept UI" with one-tap access to 24/7 crisis hotlines.
 
-### 3. Helance: The AI Sidekick
+### 3. Héalance: The AI Sidekick
 *   **Empathetic Persona:** A warm, university-focused companion that maintains strict medical boundaries.
-*   **Emotional Memory:** Helance "remembers" and analyzes your last 3 community posts to understand your journey over time and provide deeper, non-generic support.
+*   **Emotional Memory:** Héalance "remembers" and analyzes your last 3 community posts to understand your journey over time and provide deeper, non-generic support.
 *   **Contextual Chat:** Full conversation history support for natural, flowing dialogue.
 
 ### 4. Wellbeing Dashboard & Resource Map
@@ -61,7 +61,7 @@ Héalance provides a **Safe Haven** through three core pillars:
 - [x] **Onboarding:** Create the Login Screen with anonymous avatar selection logic.
 - [x] **Community:** Build the `RichPostCard` UI with "Resilience Point" interactions.
 - [x] **Feed Logic:** Implement category filtering and the "Trending Today" sidebar.
-- [x] **Chat UI:** Design message bubbles (User vs. Helance) and auto-scroll behavior.
+- [x] **Chat UI:** Design message bubbles (User vs. Héalance) and auto-scroll behavior.
 - [x] **Moderation UI:** Build the **Safety Intercept Modal** and crisis resource buttons.
 - [x] **Dashboard:** Implement the "Mental Battery" and "Wellbeing Roadmap" visuals.
 
@@ -78,7 +78,7 @@ Héalance provides a **Safe Haven** through three core pillars:
 - [x] **SDK Integration:** Connect `google_generative_ai` and secure API keys in the `.env` vault.
 - [x] **Safety Interceptor:** Engineer the high-precision "YES/NO" safety classification prompt.
 - [x] **Auto-Classifier:** Build the JSON-based categorization engine for the Feed.
-- [x] **Persona Design:** Define "Helance" as a warm, supportive student sidekick.
+- [x] **Persona Design:** Define "Héalance" as a warm, supportive student sidekick.
 - [x] **Memory Bridge:** Implement the **Emotional Memory** logic to share user history with the AI.
 - [x] **Robustness:** Added "Fail-Open" logic and compassionate fallback messages for API timeouts.
 

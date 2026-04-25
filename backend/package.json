@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Healance API",
+  "description": "Héalance API",
   "main": "index.js",
   "type": "module",
   "scripts": {
