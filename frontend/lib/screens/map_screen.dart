@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:flutter_map/flutter_map.dart'; // THE REAL MAP ENGINE
-import 'package:latlong2/latlong.dart'; // FOR GPS COORDINATES
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 const _accent = Color(0xFFFF5414);
@@ -41,7 +41,6 @@ class MapScreen extends StatelessWidget {
               final markers = snapshot.data!.docs.map((doc) {
                 final data = doc.data() as Map<String, dynamic>;
 
-                // Pick color based on status
                 Color nodeColor = Colors.greenAccent;
                 bool shouldPulse = false;
 
@@ -52,6 +51,7 @@ class MapScreen extends StatelessWidget {
                 final lat = (data['lat'] as num?)?.toDouble() ?? 0.0;
                 final lng = (data['lng'] as num?)?.toDouble() ?? 0.0;
 
+                // Pick color based on status
                 if (status == 'critical') {
                   nodeColor = Colors.redAccent;
                   shouldPulse = true;
@@ -69,6 +69,7 @@ class MapScreen extends StatelessWidget {
                   width: 150,
                   height: 80,
                   child: _buildNode(
+                    context: context,
                     color: nodeColor,
                     label: name,
                     sublabel: desc,
@@ -91,18 +92,15 @@ class MapScreen extends StatelessWidget {
                         'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
                     subdomains: const ['a', 'b', 'c', 'd'],
                   ),
-                  MarkerLayer(
-                    markers: markers,
-                  ), // Inject the live markers here!
+                  MarkerLayer(markers: markers),
                 ],
               );
             },
           ),
 
-          // Subtle vignette overlay so the map edges fade nicely behind the UI
+          // ── 2. VIGNETTE OVERLAY ──
           Positioned.fill(
             child: IgnorePointer(
-              // IgnorePointer ensures you can still drag the map underneath!
               child: Container(
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
@@ -118,7 +116,7 @@ class MapScreen extends StatelessWidget {
             ),
           ),
 
-          // ── 3. TOP LEFT PANEL ─────────────────────────────────────────
+          // ── 3. TOP LEFT PANEL ──
           Positioned(
             top: 24,
             left: 24,
@@ -168,7 +166,7 @@ class MapScreen extends StatelessWidget {
             ),
           ),
 
-          // ── 4. BOTTOM RIGHT PANEL ─────────────────────────────────────
+          // ── 4. BOTTOM RIGHT PANEL ──
           Positioned(
             bottom: 24,
             right: 24,
@@ -214,7 +212,9 @@ class MapScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        // TODO: Wire up deployment action
+                      },
                       icon: const Icon(Icons.send_rounded, size: 14),
                       label: const Text('Deploy Digital Resources'),
                       style: ElevatedButton.styleFrom(
@@ -232,7 +232,7 @@ class MapScreen extends StatelessWidget {
             ),
           ),
 
-          // ── 5. BOTTOM LEFT STATS ──────────────────────────────────────
+          // ── 5. BOTTOM LEFT STATS ──
           Positioned(
             bottom: 24,
             left: 24,
@@ -269,71 +269,86 @@ class MapScreen extends StatelessWidget {
     );
   }
 
+  // ── WIDGET EXTRACTS ──
+
   Widget _buildNode({
+    required BuildContext context,
     required Color color,
     required String label,
     required String sublabel,
     required bool pulse,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            if (pulse)
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: color.withOpacity(0.35),
-                    width: 1.5,
-                  ),
-                ),
-              ),
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.6),
-                    blurRadius: pulse ? 10 : 4,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          decoration: BoxDecoration(
-            color: _card.withOpacity(0.90),
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: color.withOpacity(0.3), width: 0.8),
+    return GestureDetector(
+      onTap: () {
+        // Safe, clean interactivity added here
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$label: $sublabel'),
+            backgroundColor: _card,
+            behavior: SnackBarBehavior.floating,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+        );
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
+              if (pulse)
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: color.withOpacity(0.35),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.6),
+                      blurRadius: pulse ? 10 : 4,
+                    ),
+                  ],
                 ),
               ),
-              Text(sublabel, style: TextStyle(color: color, fontSize: 8)),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: _card.withOpacity(0.90),
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: color.withOpacity(0.3), width: 0.8),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(sublabel, style: TextStyle(color: color, fontSize: 8)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -48,51 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
-      // 👇 TEMPORARY BUTTON TO REFILL THE NEW DATABASE 👇
-      // 👇 ERROR-CATCHING SEED BUTTON 👇
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          try {
-            // Shows a loading indicator
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Seeding... Please wait.'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-
-            await seedMapDatabase();
-
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('🔥 New Database Seeded!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
-          } catch (e) {
-            // IF IT BREAKS, THIS PRINTS THE EXACT ERROR!
-            print("🚨 SEED ERROR: $e");
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Error: $e'),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 10),
-                ),
-              );
-            }
-          }
-        },
-        backgroundColor: const Color(0xFFFF5414),
-        icon: const Icon(Icons.upload, color: Colors.white),
-        label: const Text(
-          "SEED DATABASE",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -371,38 +326,5 @@ class _LoginScreenState extends State<LoginScreen> {
         fillColor: _bg,
       ),
     );
-  }
-}
-
-Future<void> seedMapDatabase() async {
-  print("🚨 PULSE 1: Function started!");
-
-  try {
-    final CollectionReference nodes = FirebaseFirestore.instance.collection(
-      'map_nodes',
-    );
-    print("🚨 PULSE 2: Connected to Firestore instance!");
-
-    final dummyData = [
-      {"name": "Kuala Lumpur", "desc": "Burnout + Dark Thoughts", "lat": 3.1390, "lng": 101.6869, "status": "critical"},
-      {"name": "Subang Jaya", "desc": "Burnout — No 24/7 clinic", "lat": 3.0438, "lng": 101.5859, "status": "high"},
-      {"name": "Penang", "desc": "Stable — Resources adequate", "lat": 5.4141, "lng": 100.3288, "status": "stable"},
-      {"name": "Johor Bahru", "desc": "Financial Anxiety rising", "lat": 1.4927, "lng": 103.7414, "status": "moderate"},
-      {"name": "Kota Bharu", "desc": "Critical Desert", "lat": 6.1254, "lng": 102.2381, "status": "critical"},
-      {"name": "Kuching", "desc": "Isolation + Loneliness", "lat": 1.5533, "lng": 110.3440, "status": "high"},
-      {"name": "Kota Kinabalu", "desc": "Resource Desert — Sabah", "lat": 5.9804, "lng": 116.0735, "status": "critical"},
-      {"name": "Miri", "desc": "Improving — New clinic", "lat": 4.4148, "lng": 114.0089, "status": "improving"},
-    ];
-
-    print("🚨 PULSE 3: Starting to upload data...");
-    for (var node in dummyData) {
-      print("🚨 PULSE 4: Trying to upload ${node['name']}...");
-      await nodes.add(node);
-      print("🚨 PULSE 5: Successfully uploaded ${node['name']}!");
-    }
-    print("🔥 PULSE 6: Database Successfully Seeded!");
-  } catch (e) {
-    print("🚨 FATAL ERROR IN SEEDER: $e");
-    throw e; // Forces the red snackbar to show up
   }
 }
