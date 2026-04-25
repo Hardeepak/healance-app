@@ -10,7 +10,7 @@ class UserActivityTracker {
   static void addPost(String text) {
     final now = DateTime.now();
     final timeStr = DateFormat('yyyy-MM-dd HH:mm').format(now);
-    
+
     lastThreePosts.insert(0, {'text': text, 'time': timeStr});
     if (lastThreePosts.length > 3) {
       lastThreePosts.removeLast();
@@ -37,9 +37,13 @@ class HelanceAIService {
       return {'isSafe': true, 'category': 'General'};
     }
 
-    final model = GenerativeModel(model: 'gemini-2.5-flash-lite', apiKey: _apiKey);
+    final model = GenerativeModel(
+      model: 'gemini-2.5-flash-lite',
+      apiKey: _apiKey,
+    );
 
-    final prompt = '''
+    final prompt =
+        '''
     SYSTEM: You are an AI moderator and classifier for a university mental health forum.
     TASK: Analyze the USER_TEXT and return a JSON object.
     
@@ -58,12 +62,17 @@ class HelanceAIService {
 
     try {
       final response = await model.generateContent([Content.text(prompt)]);
-      final cleanJson = response.text?.replaceAll('```json', '').replaceAll('```', '').trim() ?? '';
-      
+      final cleanJson =
+          response.text
+              ?.replaceAll('```json', '')
+              .replaceAll('```', '')
+              .trim() ??
+          '';
+
       // Basic manual parsing to avoid heavy dependencies in a hackathon
       final bool isSafe = !cleanJson.contains('"isSafe": false');
       String category = 'General';
-      
+
       final catMatch = RegExp(r'"category":\s*"([^"]+)"').firstMatch(cleanJson);
       if (catMatch != null) {
         category = catMatch.group(1) ?? 'General';
@@ -93,7 +102,8 @@ class HelanceAIService {
       for (var post in recentUserPosts) {
         activityContext += "- [${post['time']}]: \"${post['text']}\"\n";
       }
-      activityContext += "\nINSTRUCTION: Use this history to provide more personal help. If you notice a pattern (e.g. posting late at night or recurring themes), mention it supportively.";
+      activityContext +=
+          "\nINSTRUCTION: Use this history to provide more personal help. If you notice a pattern (e.g. posting late at night or recurring themes), mention it supportively.";
     }
 
     final model = GenerativeModel(
@@ -104,7 +114,7 @@ class HelanceAIService {
         'YOUR PERSONALITY: Warm, validating, and observant. '
         'YOUR BOUNDARIES: You are NOT a doctor. You CANNOT diagnose or prescribe. '
         'KEEP RESPONSES UNDER 3 SENTENCES. Always prioritize validating feelings over giving advice.'
-        '$activityContext'
+        '$activityContext',
       ),
     );
 
@@ -112,7 +122,7 @@ class HelanceAIService {
       // Start a chat session with the provided history
       final chat = model.startChat(history: history ?? []);
       final response = await chat.sendMessage(Content.text(userMessage));
-      
+
       return response.text ??
           "I'm here for you, but my words are getting a bit tangled. Let's try that again.";
     } catch (e) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 🚨 NEW IMPORT FOR SYNCING USER
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:frontend/services/ai_service.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -77,14 +77,13 @@ class Post {
   );
 }
 
-// Global list so it can be mutated by the Create Post form
 final List<Post> _posts = [
   Post(
     'Loneliness',
     'empty_room',
     '1d',
     "I haven't spoken out loud to anyone in 3 days.",
-    "Online classes make it so easy to disappear. Nobody checks in. Not even once. I turned my camera off in week two and have basically been invisible since. Part of me wonders if anyone would even notice if I stopped showing up entirely.",
+    "Online classes make it so easy to disappear. Nobody checks in. Not even once.",
     750,
     180,
     true,
@@ -108,7 +107,7 @@ final List<Post> _posts = [
     'solo_eater',
     '12h',
     "Eating lunch in the library bathroom again.",
-    "Too scared to sit in the cafeteria alone. People look at you like something's wrong with you.",
+    "Too scared to sit in the cafeteria alone.",
     890,
     210,
     true,
@@ -116,47 +115,11 @@ final List<Post> _posts = [
     _av(2),
   ),
   Post(
-    'Loneliness',
-    'ghosted_guy',
-    '2d',
-    "Does anyone actually maintain friendships after high school?",
-    "Everyone moved on. I'm still calling people who never pick up.",
-    320,
-    45,
-    false,
-    Colors.blueGrey,
-    _av(3),
-  ),
-  Post(
-    'Loneliness',
-    'invisible_kid',
-    '3h',
-    "I said bye to my classmates and none of them heard me.",
-    "I just stood there, waited, then walked away. I don't think I exist to them.",
-    1100,
-    290,
-    true,
-    Colors.blueGrey,
-    _av(4),
-  ),
-  Post(
-    'Loneliness',
-    'midnight_scroller',
-    '1h',
-    "It's 2am and I have nobody to text.",
-    "So here I am posting this instead.",
-    670,
-    134,
-    false,
-    Colors.blueGrey,
-    _av(5),
-  ),
-  Post(
     'Overthinking',
     'brain_buzz',
     '5h',
     "Replaying a conversation from 3 years ago.",
-    "Why did I say that? They definitely still think about it. My brain won't let it go. I was 17.",
+    "Why did I say that? They definitely still think about it.",
     544,
     212,
     true,
@@ -167,7 +130,7 @@ final List<Post> _posts = [
     'Overthinking',
     'what_if_guy',
     '1h',
-    "If I don't get an A I won't graduate, won't get hired, will be homeless.",
+    "If I don't get an A I won't graduate.",
     "The spiral happens so fast. One bad mark and I've catastrophised my entire future.",
     900,
     150,
@@ -176,23 +139,11 @@ final List<Post> _posts = [
     _av(10),
   ),
   Post(
-    'Overthinking',
-    'decision_loop',
-    '6h',
-    "I can't choose a lunch option without a 20-minute internal debate.",
-    "Every small decision feels enormous. I'm completely drained by 9am from just existing.",
-    388,
-    91,
-    true,
-    Colors.tealAccent,
-    _av(12),
-  ),
-  Post(
     'Bullying',
     'silent_cry',
     '12h',
     "Someone made a meme about me in the uni WhatsApp group.",
-    "200 people laughing. I don't want to go to class tomorrow. Or ever. I screenshotted it and I keep opening it.",
+    "200 people laughing. I don't want to go to class tomorrow.",
     1200,
     400,
     true,
@@ -200,35 +151,11 @@ final List<Post> _posts = [
     _av(16),
   ),
   Post(
-    'Bullying',
-    'fake_friends',
-    '2h',
-    "I caught them making fun of my presentation in the back row.",
-    "They thought I couldn't see them texting and laughing. It destroyed something in me.",
-    650,
-    120,
-    true,
-    Colors.red,
-    _av(17),
-  ),
-  Post(
-    'Bullying',
-    'anon_hate',
-    '1d',
-    "Getting horrible DMs from an anonymous account.",
-    "They know specific things only people in my course would know. I feel unsafe on campus now.",
-    880,
-    250,
-    true,
-    Colors.red,
-    _av(18),
-  ),
-  Post(
     'Academic Burnout',
     'tired_scholar',
     '1h',
     "I stared at a blank Word doc for 4 hours straight.",
-    "Thesis due in a week. Brain completely fried. I used to love this subject.",
+    "Thesis due in a week. Brain completely fried.",
     512,
     89,
     true,
@@ -237,22 +164,10 @@ final List<Post> _posts = [
   ),
   Post(
     'Academic Burnout',
-    'caffeine_veins',
-    '3h',
-    "Is it normal to cry over a 2.8 GPA?",
-    "I studied so hard this semester. I feel like a massive disappointment to everyone.",
-    820,
-    140,
-    true,
-    Colors.redAccent,
-    _av(23),
-  ),
-  Post(
-    'Academic Burnout',
     'drop_out_thought',
     '8h',
     "I've thought about dropping out every single day this semester.",
-    "I won't. I can't. But the thought keeps coming back like it's offering something.",
+    "I won't. I can't. But the thought keeps coming back.",
     1100,
     310,
     true,
@@ -264,7 +179,7 @@ final List<Post> _posts = [
     'ghosted_again',
     '2h',
     "My friend group made a separate chat without me.",
-    "I saw the notifications on my roommate's phone. I pretended I didn't notice.",
+    "I saw the notifications on my roommate's phone.",
     890,
     150,
     true,
@@ -276,7 +191,7 @@ final List<Post> _posts = [
     'quietstriver',
     '4h',
     "Can't stop comparing myself to peers who got FAANG offers.",
-    "Everyone from my cohort seems to have figured it out. I freeze in every interview.",
+    "Everyone from my cohort seems to have figured it out.",
     312,
     47,
     true,
@@ -284,35 +199,11 @@ final List<Post> _posts = [
     _av(35),
   ),
   Post(
-    'Career Anxiety',
-    'linkedin_dread',
-    '2h',
-    "Opening LinkedIn has become a form of self-harm.",
-    "Another classmate. Another dream job. I close the app and stare at the ceiling.",
-    880,
-    201,
-    true,
-    Colors.indigoAccent,
-    _av(36),
-  ),
-  Post(
-    'Family Issues',
-    'black_sheep',
-    '12h',
-    "My parents refuse to acknowledge my mental health.",
-    "They tell me to 'pray more' or 'stop being lazy.' It makes everything worse.",
-    840,
-    210,
-    true,
-    Colors.deepOrange,
-    _av(1),
-  ),
-  Post(
     'Family Issues',
     'high_expectations',
     '1h',
     "My parents sacrificed so much. I can't afford to fail them.",
-    "Every B+ feels like I've betrayed years of their hard work. The weight is crushing.",
+    "Every B+ feels like I've betrayed years of their hard work.",
     920,
     240,
     true,
@@ -332,23 +223,11 @@ final List<Post> _posts = [
     _av(6),
   ),
   Post(
-    'Dark Thoughts',
-    'invisible_pain',
-    '3h',
-    "I fantasise about disappearing and nobody noticing for days.",
-    "Not dying. Just ceasing. A pause button on existing. The thought is loud lately.",
-    800,
-    187,
-    true,
-    Colors.red,
-    _av(7),
-  ),
-  Post(
     'Financial Anxiety',
     'broke_student',
     '5h',
     "How do people afford to live right now?",
-    "Rent up, groceries insane. My PTPTN runs out by the 2nd week of every month.",
+    "Rent up, groceries insane.",
     1200,
     310,
     false,
@@ -356,35 +235,11 @@ final List<Post> _posts = [
     _av(9),
   ),
   Post(
-    'Financial Anxiety',
-    'skip_meals',
-    '3h',
-    "Skipped lunch again to make it to Friday.",
-    "It's Thursday. I have RM4.50. I tell people I'm just 'not hungry.'",
-    980,
-    280,
-    true,
-    Colors.green,
-    _av(10),
-  ),
-  Post(
-    'Body Insecurity',
-    'mirror_hate',
-    '8h',
-    "Gained 10kg this semester. I dread every photo.",
-    "How do people stay fit studying 12 hours a day and stress-eating at midnight?",
-    422,
-    88,
-    false,
-    Colors.pinkAccent,
-    _av(14),
-  ),
-  Post(
     'Social Media Trap',
     'highlight_reel',
     '30m',
     "Everyone on Instagram looks like they have life figured out at 22.",
-    "Perfect holidays. Perfect bodies. Perfect careers. I know it's curated. Still destroys me.",
+    "Perfect holidays. Perfect bodies. Perfect careers.",
     1340,
     420,
     true,
@@ -396,7 +251,7 @@ final List<Post> _posts = [
     '25_and_lost',
     '1h',
     "Graduating in 3 months and I've never been more terrified.",
-    "Everyone asks 'what's next?' I genuinely don't know. That feels shameful at 22.",
+    "Everyone asks 'what's next?' I genuinely don't know.",
     1050,
     310,
     true,
@@ -404,23 +259,11 @@ final List<Post> _posts = [
     _av(25),
   ),
   Post(
-    'Trauma',
-    'not_over_it',
-    '6h',
-    "People say 'that was years ago.' My body didn't get the memo.",
-    "Smells. Sounds. Certain phrases. I'm back there instantly. Exhausted by my own triggers.",
-    870,
-    220,
-    true,
-    Colors.deepPurple,
-    _av(32),
-  ),
-  Post(
     'Phone Addiction',
     'screen_zombie',
     '4h',
     "I pick up my phone before I even open my eyes in the morning.",
-    "First and last thing I see every day. My attention span is functionally gone.",
+    "First and last thing I see every day.",
     760,
     175,
     true,
@@ -431,49 +274,13 @@ final List<Post> _posts = [
     'Procrastination',
     'paralysed_14',
     '3h',
-    "My to-do list has 14 items. Been staring at it since 9am. It's 4pm.",
-    "I kept reorganising the list instead of doing anything on it. Classic.",
+    "My to-do list has 14 items. Been staring at it since 9am.",
+    "I kept reorganising the list instead of doing anything on it.",
     870,
     220,
     true,
     Colors.orange,
     _av(1),
-  ),
-  Post(
-    'Feeling Unattractive',
-    'rejected_again',
-    '6h',
-    "Left on read after the first date. I know why.",
-    "I'm not conventionally attractive. I've accepted that. Doesn't hurt less.",
-    590,
-    135,
-    false,
-    Colors.pink,
-    _av(6),
-  ),
-  Post(
-    'No One To Talk To',
-    'burden_fear',
-    '1h',
-    "I need to talk to someone but I don't want to be a burden.",
-    "Everyone has their own problems. Why would I pile mine on top? So I don't.",
-    1050,
-    290,
-    true,
-    Colors.teal,
-    _av(10),
-  ),
-  Post(
-    'Identity & Self-Worth',
-    'who_am_i',
-    '4h',
-    "I perform different versions of myself for different people. Who is the original?",
-    "Home version. Friend version. Work version. I've lost track of the real one.",
-    720,
-    168,
-    true,
-    Colors.limeAccent,
-    _av(15),
   ),
   Post(
     'Sleep Struggles',
@@ -492,11 +299,11 @@ final List<Post> _posts = [
     'attachment_anxiety',
     '3h',
     "I love him but the moment he's quiet I spiral into 'he hates me.'",
-    "I know it's my anxiety not reality. The fear is so loud. How do I fix this?",
+    "I know it's my anxiety not reality. How do I fix this?",
     870,
     215,
     true,
-    Color(0xFFFF4D7D),
+    const Color(0xFFFF4D7D),
     _av(22),
   ),
 ];
@@ -568,8 +375,6 @@ class FeedScreenState extends State<FeedScreen> {
     _catIdx = widget.initialCategoryIndex;
   }
 
-  // THIS IS THE FIX FOR THE SIDEBAR:
-  // Listens for changes from main.dart's sidebar and updates the local category filter
   @override
   void didUpdateWidget(covariant FeedScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -580,16 +385,11 @@ class FeedScreenState extends State<FeedScreen> {
     }
   }
 
-  // ALL FILTERING HAPPENS HERE
   List<Post> get _filtered {
     var list = _posts;
-
-    // Filter by Category Space
     if (_catIdx != 0) {
       list = list.where((p) => p.category == _categories[_catIdx]).toList();
     }
-
-    // Filter by Search Text Bar
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       list = list
@@ -600,7 +400,6 @@ class FeedScreenState extends State<FeedScreen> {
           )
           .toList();
     }
-
     return list;
   }
 
@@ -707,7 +506,7 @@ class FeedScreenState extends State<FeedScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      _buildPostInputFake(), // 🚨 Updates here
+                      _buildPostInputFake(),
 
                       const SizedBox(height: 16),
                       _buildTrendingStrip(),
@@ -820,9 +619,7 @@ class FeedScreenState extends State<FeedScreen> {
                 rank: i + 1,
                 onTap: () {
                   final newIdx = _categories.indexOf(trendingList[i].category);
-                  if (newIdx != -1) {
-                    setState(() => _catIdx = newIdx);
-                  }
+                  if (newIdx != -1) setState(() => _catIdx = newIdx);
                 },
               );
             },
@@ -832,7 +629,6 @@ class FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  // 🚨 1. UPDATE: Live Avatar from Firestore in the Fake Input Box
   Widget _buildPostInputFake() {
     return GestureDetector(
       onTap: () => _showCreatePostForm(context),
@@ -851,14 +647,21 @@ class FeedScreenState extends State<FeedScreen> {
               StreamBuilder<DocumentSnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('users')
-                    .doc(FirebaseAuth.instance.currentUser?.uid)
+                    .doc(FirebaseAuth.instance.currentUser?.uid ?? 'guest')
                     .snapshots(),
                 builder: (context, snapshot) {
                   String avatarUrl =
                       'https://api.dicebear.com/8.x/notionists/png?seed=fallback';
-                  if (snapshot.hasData && snapshot.data!.exists) {
-                    avatarUrl = snapshot.data!.get('avatarUrl') ?? avatarUrl;
+
+                  if (snapshot.hasData &&
+                      snapshot.data != null &&
+                      snapshot.data!.exists) {
+                    final data = snapshot.data!.data() as Map<String, dynamic>?;
+                    if (data != null && data.containsKey('avatarUrl')) {
+                      avatarUrl = data['avatarUrl']?.toString() ?? avatarUrl;
+                    }
                   }
+
                   return CircleAvatar(
                     radius: 16,
                     backgroundColor: Colors.white10,
@@ -891,11 +694,11 @@ class FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  // FULLY IMPLEMENTED CREATE POST FORM
+  // 🚨 AI-POWERED CREATE POST FORM
   void _showCreatePostForm(BuildContext context) {
     final titleController = TextEditingController();
     final bodyController = TextEditingController();
-    String selectedCategory = 'Loneliness'; // Default starting category
+    bool isClassifying = false;
 
     showModalBottomSheet(
       context: context,
@@ -905,285 +708,223 @@ class FeedScreenState extends State<FeedScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20,
-            right: 20,
-            top: 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Create an Anonymous Post",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "This is a safe space. Your identity is hidden.",
-                  style: TextStyle(color: _textSub, fontSize: 13),
-                ),
-                const Divider(color: _border, height: 30),
-
-                // Category Dropdown
-                DropdownButtonFormField<String>(
-                  value: selectedCategory,
-                  dropdownColor: _bg,
-                  icon: const Icon(Icons.arrow_drop_down, color: _textSub),
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: _bg,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  items: _categories
-                      .where((c) => c != 'All')
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) selectedCategory = val;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Title Input
-                TextField(
-                  controller: titleController,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: "Title",
-                    hintStyle: const TextStyle(color: _textSub),
-                    filled: true,
-                    fillColor: _bg,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Body Input
-                TextField(
-                  controller: bodyController,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                    hintText: "Share what's on your mind...",
-                    hintStyle: const TextStyle(color: _textSub),
-                    filled: true,
-                    fillColor: _bg,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Submit Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _accent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 20,
+                right: 20,
+                top: 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Create an Anonymous Post",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // 🚨 2. UPDATE: Fetch actual user details before posting
-                    onPressed: () async {
-                      String title = titleController.text.trim();
-                      String body = bodyController.text.trim();
+                    const SizedBox(height: 8),
+                    const Text(
+                      "This is a safe space. Your identity is hidden. AI will automatically sort your post.",
+                      style: TextStyle(color: _textSub, fontSize: 13),
+                    ),
+                    const Divider(color: _border, height: 30),
 
-                      if (title.isEmpty || body.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please fill out both the title and body.'), backgroundColor: Colors.redAccent),
-                        );
-                        return;
-                      }
+                    TextField(
+                      controller: titleController,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: "Title",
+                        hintStyle: const TextStyle(color: _textSub),
+                        filled: true,
+                        fillColor: _bg,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
-                      // Show AI processing indicator
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) => const Center(child: CircularProgressIndicator(color: _accent)),
-                      );
+                    TextField(
+                      controller: bodyController,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: "Share what's on your mind...",
+                        hintStyle: const TextStyle(color: _textSub),
+                        filled: true,
+                        fillColor: _bg,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                      // A. FETCH REAL USER DATA (Team's Logic)
-                      String anonName = 'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}';
-                      String anonAvatar = _av(DateTime.now().millisecondsSinceEpoch);
-                      final user = FirebaseAuth.instance.currentUser;
-                      if (user != null) {
-                        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-                        if (doc.exists) {
-                          anonName = doc.data()?['username'] ?? anonName;
-                          anonAvatar = doc.data()?['avatarUrl'] ?? anonAvatar;
-                        }
-                      }
-
-                      // B. CALL THE AI ANALYZER
-                      final analysis = await HelanceAIService.analyzePost(body);
-                      
-                      if (!context.mounted) return;
-                      Navigator.pop(context); // Close loader
-
-                      if (analysis['isSafe'] == false) {
-                        Navigator.pop(context); // Close form
-                        _showSafetyInterceptUI(context); // Blocked!
-                      } else {
-                        String aiCategory = analysis['category'];
-                        
-                        setState(() {
-                          _posts.insert(
-                            0,
-                            Post(
-                              aiCategory,
-                              anonName,
-                              'Just now',
-                              title,
-                              body,
-                              1,
-                              0,
-                              true, // AI VERIFIED!
-                              _getColorForCategory(aiCategory),
-                              anonAvatar,
-                            ),
-                          );
-                          _catIdx = 0;
-                        });
-
-                        // C. RECONNECT MEMORY BANK
-                        UserActivityTracker.addPost(body);
-
-                        Navigator.pop(context); // Close form
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("✅ AI Verified as #$aiCategory & published!"),
-                            backgroundColor: Colors.green,
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _accent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        );
-                      }
-                    },
-                    child: const Text(
-                      "Post Anonymously",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                          disabledBackgroundColor: _accent.withOpacity(0.6),
+                        ),
+                        onPressed: isClassifying
+                            ? null
+                            : () async {
+                                if (titleController.text.isNotEmpty &&
+                                    bodyController.text.isNotEmpty) {
+                                  // 1. Turn on loading spinner
+                                  setModalState(() => isClassifying = true);
+
+                                  // 2. AI Categorization
+                                  String detectedCategory =
+                                      'Loneliness'; // Fallback
+                                  try {
+                                    final combinedText =
+                                        "TITLE: ${titleController.text}\nBODY: ${bodyController.text}";
+
+                                    final aiResult =
+                                        await HelanceAIService.analyzePost(
+                                          combinedText,
+                                        );
+                                    detectedCategory =
+                                        aiResult['category'] as String;
+
+                                    if (!_categories.contains(
+                                      detectedCategory,
+                                    )) {
+                                      detectedCategory = 'Overthinking';
+                                    }
+
+                                    UserActivityTracker.addPost(combinedText);
+                                  } catch (e) {
+                                    debugPrint("AI Classification failed: $e");
+                                  }
+
+                                  // 3. Profile Fetch
+                                  String anonName =
+                                      'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}';
+                                  String anonAvatar = _av(
+                                    DateTime.now().millisecondsSinceEpoch,
+                                  );
+
+                                  final user =
+                                      FirebaseAuth.instance.currentUser;
+                                  if (user != null) {
+                                    try {
+                                      final doc = await FirebaseFirestore
+                                          .instance
+                                          .collection('users')
+                                          .doc(user.uid)
+                                          .get();
+                                      if (doc.exists && doc.data() != null) {
+                                        final data =
+                                            doc.data() as Map<String, dynamic>?;
+                                        if (data != null) {
+                                          anonName =
+                                              data['username']?.toString() ??
+                                              anonName;
+                                          anonAvatar =
+                                              data['avatarUrl']?.toString() ??
+                                              anonAvatar;
+                                        }
+                                      }
+                                    } catch (e) {
+                                      debugPrint("Profile fetch error: $e");
+                                    }
+                                  }
+
+                                  if (!context.mounted) return;
+
+                                  // 4. Save and Update UI
+                                  setState(() {
+                                    _posts.insert(
+                                      0,
+                                      Post(
+                                        detectedCategory,
+                                        anonName,
+                                        'Just now',
+                                        titleController.text,
+                                        bodyController.text,
+                                        1,
+                                        0,
+                                        true,
+                                        _getColorForCategory(detectedCategory),
+                                        anonAvatar,
+                                      ),
+                                    );
+                                    _catIdx = 0;
+                                  });
+
+                                  setModalState(() => isClassifying = false);
+                                  Navigator.pop(context);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Post sorted into #$detectedCategory!',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Please fill out both the title and body.',
+                                      ),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: isClassifying
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.auto_awesome, size: 18),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "Post Anonymously",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
-  }
-
-  // --- ROLE 1 TASK 3: SAFETY INTERCEPT UI ---
-  void _showSafetyInterceptUI(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: _bg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Colors.redAccent, width: 2),
-          ),
-          child: Container(
-            width: 450,
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Icon(Icons.warning_rounded, color: Colors.redAccent, size: 48),
-                const SizedBox(height: 16),
-                const Text(
-                  "AI Safety Intercept",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.redAccent,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  "Our AI detected language indicating severe distress or self-harm in your draft. You are not alone, and we want to help.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: _textTitle, fontSize: 14, height: 1.5),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.phone),
-                    label: const Text("Connect to 24/7 Crisis Support"),
-                    onPressed: () => _launch('https://www.befrienders.org.my/'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "I'm okay, discard post",
-                    style: TextStyle(color: _textSub),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // ── THE BRIDGE TO FIREBASE (WRITE) ──
-  Future<void> submitPost(String title, String body, String category,
-      {bool aiVerified = false}) async {
-    if (title.trim().isEmpty || body.trim().isEmpty) return;
-
-    try {
-      final CollectionReference cloudPosts =
-          FirebaseFirestore.instance.collection('posts');
-
-      // 1. Save it to the live database!
-      await cloudPosts.add({
-        'title': title,
-        'content': body,
-        'category': category,
-        'author': 'anon_user',
-        'timestamp': FieldValue.serverTimestamp(),
-        'likes': 1,
-        'ai_verified': aiVerified,
-      });
-
-      print("✅ Post successfully saved to the cloud!");
-    } catch (e) {
-      print("🚨 Error saving post: $e");
-    }
   }
 
   List<Widget> _buildSidePanel() {
@@ -1207,22 +948,12 @@ class FeedScreenState extends State<FeedScreen> {
             Colors.pinkAccent,
             'https://www.meetup.com/cities/my/',
           ),
-          const Resource(
-            'Anytime Fitness',
-            'Physical health drives mental health. 3-Day Free Trial.',
-            'Claim Free Trial',
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500',
-            Colors.purpleAccent,
-            'https://www.anytimefitness.my/try-us-free/',
-          ),
         ];
 
     final widgets = <Widget>[];
     for (int i = 0; i < resources.length; i++) {
       widgets.add(_buildActionCard(resources[i]));
-      if (i < resources.length - 1) {
-        widgets.add(const SizedBox(height: 16));
-      }
+      if (i < resources.length - 1) widgets.add(const SizedBox(height: 16));
     }
     return widgets;
   }
@@ -1343,7 +1074,7 @@ class _TrendingCard extends StatelessWidget {
             const Spacer(),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.arrow_upward_rounded,
                   size: 14,
                   color: Colors.blueAccent,
@@ -1620,6 +1351,7 @@ class RichPostCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 🚨 UI RESTORED HERE: The Category and AI Verified badges are back!
                   Row(
                     children: [
                       CircleAvatar(
@@ -1641,25 +1373,63 @@ class RichPostCard extends StatelessWidget {
                         post.time,
                         style: const TextStyle(color: _textSub, fontSize: 12),
                       ),
-                      const Spacer(),
+
+                      const Spacer(), // Pushes the badges to the right side
+                      // Category Tag
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
-                          vertical: 2,
+                          vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: post.tagColor.withOpacity(0.1),
+                          color: post.tagColor.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          post.category,
+                          '#${post.category.replaceAll(' ', '')}',
                           style: TextStyle(
+                            color: post.tagColor,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: post.tagColor,
                           ),
                         ),
                       ),
+
+                      // AI Verified Badge
+                      if (post.aiSupported) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.blueAccent.withOpacity(0.3),
+                            ),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.verified,
+                                color: Colors.blueAccent,
+                                size: 12,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'AI Verified',
+                                style: TextStyle(
+                                  color: Colors.blueAccent,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -1738,39 +1508,6 @@ class RichPostCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const Spacer(),
-                      if (post.aiSupported)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.amber.withOpacity(0.3),
-                            ),
-                            borderRadius: BorderRadius.circular(4),
-                            color: Colors.amber.withOpacity(0.1),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.auto_awesome,
-                                color: Colors.amber,
-                                size: 12,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'AI Verified',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.amber,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                     ],
                   ),
                 ],
