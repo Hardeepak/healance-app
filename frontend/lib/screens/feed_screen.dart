@@ -561,6 +561,116 @@ class _FeedScreenState extends State<FeedScreen> {
   void initState() {
     super.initState();
     _catIdx = widget.initialCategoryIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showMoodModal(context));
+  }
+
+  void _showMoodModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _card,
+      isDismissible: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: _border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "How is your mood today?",
+              style: TextStyle(
+                color: _textTitle,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildMoodOption(context, "😢", "Terrible"),
+                _buildMoodOption(context, "😟", "Bad"),
+                _buildMoodOption(context, "😐", "Neutral"),
+                _buildMoodOption(context, "🙂", "Good"),
+                _buildMoodOption(context, "😄", "Great"),
+              ],
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoodOption(BuildContext context, String emoji, String label) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Mood logged: $label"),
+            backgroundColor: _card,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: _border),
+            ),
+          ),
+        );
+
+        // --- Firebase & Geolocator Integration (Commented Out) ---
+        /*
+        try {
+          // 1. Get current location
+          // Position position = await Geolocator.getCurrentPosition(
+          //   desiredAccuracy: LocationAccuracy.high
+          // );
+          
+          // 2. Push to Firestore
+          // await FirebaseFirestore.instance.collection('mood_map').add({
+          //   'mood': label,
+          //   'emoji': emoji,
+          //   'timestamp': FieldValue.serverTimestamp(),
+          //   'location': GeoPoint(position.latitude, position.longitude),
+          // });
+          
+          print("Mood successfully cast to Firebase!");
+        } catch (e) {
+          print("Error casting mood: $e");
+        }
+        */
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 38)),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: _textSub,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   // ALL FILTERING HAPPENS HERE (Search Bar + Category Bar)
