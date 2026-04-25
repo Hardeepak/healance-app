@@ -61,6 +61,7 @@ class Post {
   final int points, comments;
   final bool aiSupported;
   final Color tagColor;
+
   const Post(
     this.category,
     this.user,
@@ -75,6 +76,7 @@ class Post {
   );
 }
 
+// Global list so it can be mutated by the Create Post form
 final List<Post> _posts = [
   Post(
     'Loneliness',
@@ -493,7 +495,7 @@ final List<Post> _posts = [
     870,
     215,
     true,
-    const Color(0xFFFF4D7D),
+    Color(0xFFFF4D7D),
     _av(22),
   ),
 ];
@@ -527,10 +529,11 @@ List<Post> get _trending {
   return sorted.take(3).toList();
 }
 
-class _Resource {
+class Resource {
   final String title, desc, btnText, imageUrl, url;
   final Color color;
-  const _Resource(
+
+  const Resource(
     this.title,
     this.desc,
     this.btnText,
@@ -540,22 +543,25 @@ class _Resource {
   );
 }
 
-Map<String, List<_Resource>> _sidebarResources = {
-  // Add your specific resources here or use the fallback built in _buildSidePanel
+Map<String, List<Resource>> _sidebarResources = {
+  // Add specific resources here if needed in the future
 };
 
 class FeedScreen extends StatefulWidget {
   final int initialCategoryIndex;
+
   const FeedScreen({super.key, this.initialCategoryIndex = 0});
+
   @override
-  State<FeedScreen> createState() => _FeedScreenState();
+  State<FeedScreen> createState() => FeedScreenState();
 }
 
-class _FeedScreenState extends State<FeedScreen> {
+class FeedScreenState extends State<FeedScreen> {
   late int _catIdx;
   final Set<int> _upvoted = {};
   final Set<int> _downvoted = {};
-  String _searchQuery = ""; // Search filter state
+
+  String _searchQuery = "";
 
   @override
   void initState() {
@@ -563,12 +569,28 @@ class _FeedScreenState extends State<FeedScreen> {
     _catIdx = widget.initialCategoryIndex;
   }
 
-  // ALL FILTERING HAPPENS HERE (Search Bar + Category Bar)
+  // THIS IS THE FIX FOR THE SIDEBAR:
+  // Listens for changes from main.dart's sidebar and updates the local category filter
+  @override
+  void didUpdateWidget(covariant FeedScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCategoryIndex != widget.initialCategoryIndex) {
+      setState(() {
+        _catIdx = widget.initialCategoryIndex;
+      });
+    }
+  }
+
+  // ALL FILTERING HAPPENS HERE
   List<Post> get _filtered {
     var list = _posts;
+
+    // Filter by Category Space
     if (_catIdx != 0) {
       list = list.where((p) => p.category == _categories[_catIdx]).toList();
     }
+
+    // Filter by Search Text Bar
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       list = list
@@ -579,6 +601,7 @@ class _FeedScreenState extends State<FeedScreen> {
           )
           .toList();
     }
+
     return list;
   }
 
@@ -657,7 +680,6 @@ class _FeedScreenState extends State<FeedScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // WORKING SEARCH BAR
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -672,7 +694,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               Icons.search,
                               color: _textSub,
                             ),
-                            hintText: "Search Héalance...",
+                            hintText: "Search Healance...",
                             hintStyle: const TextStyle(color: _textSub),
                             filled: true,
                             fillColor: _card,
@@ -683,12 +705,13 @@ class _FeedScreenState extends State<FeedScreen> {
                           ),
                         ),
                       ),
+
                       const SizedBox(height: 16),
                       _buildPostInputFake(),
                       const SizedBox(height: 16),
                       _buildTrendingStrip(),
                       const SizedBox(height: 16),
-                      _CategoryBar(
+                      CategoryBar(
                         selected: _catIdx,
                         onTap: (i) => setState(() => _catIdx = i),
                       ),
@@ -696,28 +719,29 @@ class _FeedScreenState extends State<FeedScreen> {
                       ...List.generate(_filtered.length, (i) {
                         final post = _filtered[i];
                         final globalIdx = _posts.indexOf(post);
-                        return _RichPostCard(
+                        return RichPostCard(
                           post: post,
                           upvoted: _upvoted.contains(globalIdx),
                           downvoted: _downvoted.contains(globalIdx),
                           onUpvote: () => setState(() {
-                            _upvoted.contains(globalIdx)
-                                ? _upvoted.remove(globalIdx)
-                                : {
-                                    _upvoted.add(globalIdx),
-                                    _downvoted.remove(globalIdx),
-                                  };
+                            if (_upvoted.contains(globalIdx)) {
+                              _upvoted.remove(globalIdx);
+                            } else {
+                              _upvoted.add(globalIdx);
+                              _downvoted.remove(globalIdx);
+                            }
                           }),
                           onDownvote: () => setState(() {
-                            _downvoted.contains(globalIdx)
-                                ? _downvoted.remove(globalIdx)
-                                : {
-                                    _downvoted.add(globalIdx),
-                                    _upvoted.remove(globalIdx),
-                                  };
+                            if (_downvoted.contains(globalIdx)) {
+                              _downvoted.remove(globalIdx);
+                            } else {
+                              _downvoted.add(globalIdx);
+                              _upvoted.remove(globalIdx);
+                            }
                           }),
                         );
                       }),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -738,7 +762,7 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Widget _buildTrendingStrip() {
-    final trending = _trending;
+    final trendingList = _trending;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -786,9 +810,19 @@ class _FeedScreenState extends State<FeedScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: trending.length,
-            itemBuilder: (_, i) =>
-                _TrendingCard(post: trending[i], rank: i + 1),
+            itemCount: trendingList.length,
+            itemBuilder: (context, i) {
+              return _TrendingCard(
+                post: trendingList[i],
+                rank: i + 1,
+                onTap: () {
+                  final newIdx = _categories.indexOf(trendingList[i].category);
+                  if (newIdx != -1) {
+                    setState(() => _catIdx = newIdx);
+                  }
+                },
+              );
+            },
           ),
         ),
       ],
@@ -841,8 +875,179 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
+  // FULLY IMPLEMENTED CREATE POST FORM
   void _showCreatePostForm(BuildContext context) {
-    // Keep your exact create post form logic here
+    final titleController = TextEditingController();
+    final bodyController = TextEditingController();
+    String selectedCategory = 'Loneliness'; // Default starting category
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _card,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Create an Anonymous Post",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "This is a safe space. Your identity is hidden.",
+                  style: TextStyle(color: _textSub, fontSize: 13),
+                ),
+                const Divider(color: _border, height: 30),
+
+                // Category Dropdown
+                DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  dropdownColor: _bg,
+                  icon: const Icon(Icons.arrow_drop_down, color: _textSub),
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: _bg,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  items: _categories
+                      .where((c) => c != 'All')
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) selectedCategory = val;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Title Input
+                TextField(
+                  controller: titleController,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: "Title",
+                    hintStyle: const TextStyle(color: _textSub),
+                    filled: true,
+                    fillColor: _bg,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Body Input
+                TextField(
+                  controller: bodyController,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: "Share what's on your mind...",
+                    hintStyle: const TextStyle(color: _textSub),
+                    filled: true,
+                    fillColor: _bg,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Submit Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _accent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () {
+                      if (titleController.text.isNotEmpty &&
+                          bodyController.text.isNotEmpty) {
+                        setState(() {
+                          // Insert the new post at the very top of the global list
+                          _posts.insert(
+                            0,
+                            Post(
+                              selectedCategory,
+                              'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}', // Random anon name
+                              'Just now',
+                              titleController.text,
+                              bodyController.text,
+                              1, // Start with 1 upvote
+                              0, // 0 comments
+                              false,
+                              _getColorForCategory(selectedCategory),
+                              _av(
+                                DateTime.now().millisecondsSinceEpoch,
+                              ), // Assign random avatar
+                            ),
+                          );
+                          // Reset the category view to 'All' so the user sees their post immediately
+                          _catIdx = 0;
+                        });
+
+                        Navigator.pop(context); // Close the bottom sheet
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Post published anonymously!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please fill out both the title and body.',
+                            ),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text(
+                      "Post Anonymously",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   List<Widget> _buildSidePanel() {
@@ -850,23 +1055,23 @@ class _FeedScreenState extends State<FeedScreen> {
     final resources =
         _sidebarResources[cat] ??
         [
-          const _Resource(
+          const Resource(
             'Headspace',
             'Learn to meditate and live mindfully.',
             'Try Headspace',
-            'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=500',
+            'https://images.unsplash.com/photo-1528319725582-ddc096101511?w=500',
             Colors.orangeAccent,
             'https://www.headspace.com/',
           ),
-          const _Resource(
+          const Resource(
             'Meetup Malaysia',
             'Find low-pressure local groups for hobbies you love.',
             'Explore Meetup',
-            'https://images.unsplash.com/photo-1529156069898-49953eb1b5ea?w=500',
+            'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500',
             Colors.pinkAccent,
             'https://www.meetup.com/cities/my/',
           ),
-          const _Resource(
+          const Resource(
             'Anytime Fitness',
             'Physical health drives mental health. 3-Day Free Trial.',
             'Claim Free Trial',
@@ -879,12 +1084,14 @@ class _FeedScreenState extends State<FeedScreen> {
     final widgets = <Widget>[];
     for (int i = 0; i < resources.length; i++) {
       widgets.add(_buildActionCard(resources[i]));
-      if (i < resources.length - 1) widgets.add(const SizedBox(height: 16));
+      if (i < resources.length - 1) {
+        widgets.add(const SizedBox(height: 16));
+      }
     }
     return widgets;
   }
 
-  Widget _buildActionCard(_Resource r) {
+  Widget _buildActionCard(Resource r) {
     return Card(
       elevation: 0,
       color: _card,
@@ -959,45 +1166,95 @@ class _FeedScreenState extends State<FeedScreen> {
 class _TrendingCard extends StatelessWidget {
   final Post post;
   final int rank;
-  const _TrendingCard({required this.post, required this.rank});
+  final VoidCallback onTap;
+
+  const _TrendingCard({
+    required this.post,
+    required this.rank,
+    required this.onTap,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 240,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: rank == 1
-              ? Colors.amber.withOpacity(0.5)
-              : Colors.grey.withOpacity(0.4),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            post.title,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: _textTitle,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 240,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: rank == 1
+                ? Colors.amber.withOpacity(0.5)
+                : Colors.grey.withOpacity(0.4),
           ),
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              post.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: _textTitle,
+              ),
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Icon(
+                  Icons.arrow_upward_rounded,
+                  size: 14,
+                  color: Colors.blueAccent,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${post.points}',
+                  style: const TextStyle(
+                    color: Colors.blueAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: post.tagColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '#${post.category.replaceAll(' ', '')}',
+                    style: TextStyle(
+                      color: post.tagColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _CategoryBar extends StatelessWidget {
+class CategoryBar extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onTap;
-  const _CategoryBar({required this.selected, required this.onTap});
+
+  const CategoryBar({super.key, required this.selected, required this.onTap});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -1006,7 +1263,7 @@ class _CategoryBar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: _categories.length,
-        itemBuilder: (_, i) {
+        itemBuilder: (context, i) {
           final sel = i == selected;
           return GestureDetector(
             onTap: () => onTap(i),
@@ -1034,13 +1291,13 @@ class _CategoryBar extends StatelessWidget {
   }
 }
 
-// ── THE FULLY WORKING POST CARD ───────────────────────────────────────────
-class _RichPostCard extends StatelessWidget {
+class RichPostCard extends StatelessWidget {
   final Post post;
   final bool upvoted, downvoted;
   final VoidCallback onUpvote, onDownvote;
 
-  const _RichPostCard({
+  const RichPostCard({
+    super.key,
     required this.post,
     required this.upvoted,
     required this.downvoted,
@@ -1168,6 +1425,7 @@ class _RichPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int displayPoints = post.points + (upvoted ? 1 : 0) - (downvoted ? 1 : 0);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 0,
@@ -1272,10 +1530,8 @@ class _RichPostCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // THE NATIVE SHARE BUTTON
                       InkWell(
                         onTap: () async {
-                          // This triggers the native OS share sheet!
                           await Share.share(
                             "Check out this post on Héalance:\n\n${post.title}\n${post.body}",
                           );
@@ -1293,7 +1549,7 @@ class _RichPostCard extends StatelessWidget {
                               SizedBox(width: 6),
                               Text(
                                 'Share',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   color: _textSub,
                                   fontWeight: FontWeight.bold,

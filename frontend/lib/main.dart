@@ -143,32 +143,7 @@ class _RootScreenState extends State<RootScreen> {
                 letterSpacing: -1,
               ),
             ),
-            if (isDesktop) ...[
-              const SizedBox(width: 40),
-              Container(
-                width: 300,
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: _bg,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.search, size: 18, color: Colors.grey.shade500),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Search héalance',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            // The top search bar has been completely removed from here
           ],
         ),
         actions: [
