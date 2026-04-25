@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // 🚨 NEW IMPORT FOR SYNCING USER
 import 'package:frontend/services/ai_service.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -543,9 +544,7 @@ class Resource {
   );
 }
 
-Map<String, List<Resource>> _sidebarResources = {
-  // Add specific resources here if needed in the future
-};
+Map<String, List<Resource>> _sidebarResources = {};
 
 class FeedScreen extends StatefulWidget {
   final int initialCategoryIndex;
@@ -664,6 +663,7 @@ class FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     bool isWide = MediaQuery.of(context).size.width > 900;
+
     return Scaffold(
       backgroundColor: _bg,
       body: Row(
@@ -705,9 +705,10 @@ class FeedScreenState extends State<FeedScreen> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 16),
-                      _buildPostInputFake(),
+
+                      _buildPostInputFake(), // 🚨 Updates here
+
                       const SizedBox(height: 16),
                       _buildTrendingStrip(),
                       const SizedBox(height: 16),
@@ -719,6 +720,7 @@ class FeedScreenState extends State<FeedScreen> {
                       ...List.generate(_filtered.length, (i) {
                         final post = _filtered[i];
                         final globalIdx = _posts.indexOf(post);
+
                         return RichPostCard(
                           post: post,
                           upvoted: _upvoted.contains(globalIdx),
@@ -763,6 +765,7 @@ class FeedScreenState extends State<FeedScreen> {
 
   Widget _buildTrendingStrip() {
     final trendingList = _trending;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -829,6 +832,7 @@ class FeedScreenState extends State<FeedScreen> {
     );
   }
 
+  // 🚨 1. UPDATE: Live Avatar from Firestore in the Fake Input Box
   Widget _buildPostInputFake() {
     return GestureDetector(
       onTap: () => _showCreatePostForm(context),
@@ -844,11 +848,23 @@ class FeedScreenState extends State<FeedScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              const CircleAvatar(
-                radius: 16,
-                backgroundImage: NetworkImage(
-                  'https://api.dicebear.com/8.x/notionists/png?seed=You',
-                ),
+              StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(FirebaseAuth.instance.currentUser?.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  String avatarUrl =
+                      'https://api.dicebear.com/8.x/notionists/png?seed=fallback';
+                  if (snapshot.hasData && snapshot.data!.exists) {
+                    avatarUrl = snapshot.data!.get('avatarUrl') ?? avatarUrl;
+                  }
+                  return CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.white10,
+                    backgroundImage: NetworkImage(avatarUrl),
+                  );
+                },
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -991,16 +1007,37 @@ class FeedScreenState extends State<FeedScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: () {
+                    // 🚨 2. UPDATE: Fetch actual user details before posting
+                    onPressed: () async {
                       if (titleController.text.isNotEmpty &&
                           bodyController.text.isNotEmpty) {
+                        // Defaults just in case
+                        String anonName =
+                            'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}';
+                        String anonAvatar = _av(
+                          DateTime.now().millisecondsSinceEpoch,
+                        );
+
+                        // Fetch real logged-in user data
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user != null) {
+                          final doc = await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(user.uid)
+                              .get();
+                          if (doc.exists) {
+                            anonName = doc.data()?['username'] ?? anonName;
+                            anonAvatar = doc.data()?['avatarUrl'] ?? anonAvatar;
+                          }
+                        }
+
                         setState(() {
                           // Insert the new post at the very top of the global list
                           _posts.insert(
                             0,
                             Post(
                               selectedCategory,
-                              'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}', // Random anon name
+                              anonName, // Uses actual anonymous name
                               'Just now',
                               titleController.text,
                               bodyController.text,
@@ -1008,9 +1045,7 @@ class FeedScreenState extends State<FeedScreen> {
                               0, // 0 comments
                               false,
                               _getColorForCategory(selectedCategory),
-                              _av(
-                                DateTime.now().millisecondsSinceEpoch,
-                              ), // Assign random avatar
+                              anonAvatar, // Uses chosen avatar
                             ),
                           );
                           // Reset the category view to 'All' so the user sees their post immediately
@@ -1484,6 +1519,30 @@ class RichPostCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundColor: Colors.white10,
+                        backgroundImage: NetworkImage(post.avatarUrl),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        post.user,
+                        style: const TextStyle(
+                          color: _textSub,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        post.time,
+                        style: const TextStyle(color: _textSub, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   Text(
                     post.title,
                     style: const TextStyle(

@@ -5,6 +5,8 @@ import 'package:frontend/screens/tools_screen.dart';
 import 'package:frontend/screens/map_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 const _bg = Color(0xFF0B1416);
 const _card = Color(0xFF1A2A30);
@@ -66,6 +68,45 @@ class _RootScreenState extends State<RootScreen> {
   int _currentIndex = 0;
   // This drives the feed filter from sidebar tap
   int _feedCategoryIndex = 0;
+
+  // 🚨 1. Add variables to hold the live user data
+  String _username = "Loading...";
+  String _avatarUrl =
+      "https://api.dicebear.com/8.x/notionists/png?seed=fallback";
+
+  // 🚨 2. Fetch the data as soon as the screen loads
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (doc.exists && mounted) {
+        setState(() {
+          _username = doc.data()?['username'] ?? 'anon_user';
+          _avatarUrl = doc.data()?['avatarUrl'] ?? _avatarUrl;
+        });
+      }
+    }
+  }
+
+  // 🚨 3. The Logout Function
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    }
+  }
 
   // Maps sidebar community label → feed category string
   static const _communityToCategory = {
@@ -143,13 +184,11 @@ class _RootScreenState extends State<RootScreen> {
                 letterSpacing: -1,
               ),
             ),
-            // The top search bar has been completely removed from here
           ],
         ),
         actions: [
           Container(
             margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: _bg,
               borderRadius: BorderRadius.circular(20),
@@ -157,7 +196,10 @@ class _RootScreenState extends State<RootScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.eco, size: 16, color: Colors.green),
+                const Padding(
+                  padding: EdgeInsets.only(left: 12.0),
+                  child: Icon(Icons.eco, size: 16, color: Colors.green),
+                ),
                 const SizedBox(width: 4),
                 const Text(
                   '1.2k',
@@ -167,19 +209,67 @@ class _RootScreenState extends State<RootScreen> {
                     fontSize: 13,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const CircleAvatar(
-                  radius: 10,
-                  backgroundImage: NetworkImage(
-                    'https://api.dicebear.com/8.x/adventurer/png?seed=YouMain&backgroundColor=b6e3f4',
+                const SizedBox(width: 8),
+
+                // 🚨 4. THE INTERACTIVE DROPDOWN MENU
+                PopupMenuButton<String>(
+                  color: _card,
+                  offset: const Offset(0, 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  onSelected: (value) {
+                    if (value == 'logout') {
+                      _logout();
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    const PopupMenuItem(
+                      value: 'logout',
+                      child: Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.redAccent, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Log Out',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  // The visible button area
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      right: 12.0,
+                      top: 4,
+                      bottom: 4,
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 10,
+                          backgroundColor: Colors.white10,
+                          backgroundImage: NetworkImage(
+                            _avatarUrl,
+                          ), // Uses Live Avatar
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _username, // Uses Live Username
+                          style: const TextStyle(
+                            color: _textTitle,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Text(
-                  'anon_user',
-                  style: TextStyle(color: _textTitle, fontSize: 13),
-                ),
-                const Icon(Icons.arrow_drop_down, color: Colors.grey),
               ],
             ),
           ),
