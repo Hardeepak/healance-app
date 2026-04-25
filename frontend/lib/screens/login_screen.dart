@@ -48,51 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
-      // 👇 TEMPORARY BUTTON TO REFILL THE NEW DATABASE 👇
-      // 👇 ERROR-CATCHING SEED BUTTON 👇
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          try {
-            // Shows a loading indicator
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Seeding... Please wait.'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-
-            await seedMapDatabase();
-
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('🔥 New Database Seeded!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
-          } catch (e) {
-            // IF IT BREAKS, THIS PRINTS THE EXACT ERROR!
-            print("🚨 SEED ERROR: $e");
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Error: $e'),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 10),
-                ),
-              );
-            }
-          }
-        },
-        backgroundColor: const Color(0xFFFF5414),
-        icon: const Icon(Icons.upload, color: Colors.white),
-        label: const Text(
-          "SEED DATABASE",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -250,6 +205,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   Icons.lock_outline,
                   isPassword: true,
                 ),
+                if (isLogin)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        // TODO: Implement forgot password logic
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Forgot Password? Link sent to your email"),
+                            backgroundColor: _accent,
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Forgot Password?",
+                        style: TextStyle(color: _textSub, fontSize: 12),
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 32),
 
                 ElevatedButton(
