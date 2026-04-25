@@ -42,6 +42,7 @@ class HelanceAIService {
       apiKey: _apiKey,
     );
 
+    // 🚨 UPDATED PROMPT: Now catches passive ideation and "disappearing"
     final prompt =
         '''
     SYSTEM: You are an AI moderator and classifier for a university mental health forum.
@@ -50,7 +51,7 @@ class HelanceAIService {
     CATEGORIES: [Academic Burnout, Loneliness, Overthinking, Bullying, Friendship Drama, Financial Anxiety, Career Anxiety, Dark Thoughts, Body Insecurity, Family Issues, Social Media Trap, Future Doubts, Trauma, Phone Addiction, Procrastination, Feeling Unattractive, No One To Talk To, Identity & Self-Worth, Sleep Struggles, Relationships]
 
     RULES:
-    1. Determine if the text indicates immediate, severe risk of self-harm or violence (isSafe: true/false).
+    1. Determine if the text indicates ANY risk of self-harm, extreme hopelessness, passive suicidal ideation, or expressions of wanting to "disappear", "not exist", or "give up" (isSafe: true/false). If they sound like they are giving up on life, mark isSafe as false.
     2. Select the most relevant category from the list above.
     3. Return ONLY the JSON object.
 
@@ -69,10 +70,14 @@ class HelanceAIService {
               .trim() ??
           '';
 
-      // Basic manual parsing to avoid heavy dependencies in a hackathon
-      final bool isSafe = !cleanJson.contains('"isSafe": false');
-      String category = 'General';
+      // 🚨 UPDATED PARSING: Uses Regex to catch 'false' regardless of spaces or capitals
+      final bool isUnsafe = RegExp(
+        r'"isSafe"\s*:\s*false',
+        caseSensitive: false,
+      ).hasMatch(cleanJson);
+      final bool isSafe = !isUnsafe;
 
+      String category = 'General';
       final catMatch = RegExp(r'"category":\s*"([^"]+)"').firstMatch(cleanJson);
       if (catMatch != null) {
         category = catMatch.group(1) ?? 'General';

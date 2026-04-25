@@ -790,29 +790,123 @@ class FeedScreenState extends State<FeedScreen> {
                                   // 1. Turn on loading spinner
                                   setModalState(() => isClassifying = true);
 
-                                  // 2. AI Categorization
+                                  // 2. AI Categorization & Safety Check
                                   String detectedCategory =
                                       'Loneliness'; // Fallback
+                                  bool isSafePost =
+                                      true; // Track safety globally
+
                                   try {
                                     final combinedText =
                                         "TITLE: ${titleController.text}\nBODY: ${bodyController.text}";
 
+                                    // 🚨 Calls your Backend Dev's exact function
                                     final aiResult =
                                         await HelanceAIService.analyzePost(
                                           combinedText,
                                         );
-                                    detectedCategory =
-                                        aiResult['category'] as String;
 
-                                    if (!_categories.contains(
-                                      detectedCategory,
-                                    )) {
-                                      detectedCategory = 'Overthinking';
+                                    // 🚨 SCOPE FIX: Check safety INSIDE the try block
+                                    if (aiResult['isSafe'] == false) {
+                                      isSafePost = false;
+                                    } else {
+                                      detectedCategory =
+                                          aiResult['category'] as String;
+                                      if (!_categories.contains(
+                                        detectedCategory,
+                                      )) {
+                                        detectedCategory = 'Overthinking';
+                                      }
+                                      // Tell tracker about this post!
+                                      UserActivityTracker.addPost(combinedText);
                                     }
-
-                                    UserActivityTracker.addPost(combinedText);
                                   } catch (e) {
                                     debugPrint("AI Classification failed: $e");
+                                  }
+
+                                  // 🚨 RESTORED UI: The Safety Intercept Check
+                                  if (!isSafePost) {
+                                    setModalState(() => isClassifying = false);
+                                    Navigator.pop(
+                                      context,
+                                    ); // Close the bottom sheet immediately
+
+                                    // Trigger the Intercept UI
+                                    if (context.mounted) {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (context) => AlertDialog(
+                                          backgroundColor: _card,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          title: const Row(
+                                            children: [
+                                              Icon(
+                                                Icons.shield_rounded,
+                                                color: Colors.redAccent,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Safety Alert',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          content: const Text(
+                                            "We hear you, and you are not alone. Your safety is incredibly important. Please reach out to someone who can help right now.",
+                                            style: TextStyle(
+                                              color: _textTitle,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text(
+                                                "Go Back",
+                                                style: TextStyle(
+                                                  color: _textSub,
+                                                ),
+                                              ),
+                                            ),
+                                            ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    Colors.redAccent,
+                                                foregroundColor: Colors.white,
+                                              ),
+                                              onPressed: () async {
+                                                const url =
+                                                    'https://www.befrienders.org.my/';
+                                                if (!await launchUrl(
+                                                  Uri.parse(url),
+                                                )) {
+                                                  debugPrint(
+                                                    'Could not launch $url',
+                                                  );
+                                                }
+                                              },
+                                              icon: const Icon(
+                                                Icons.phone,
+                                                size: 16,
+                                              ),
+                                              label: const Text(
+                                                "Talk to Befrienders",
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                    return; // STOP the function here so the post doesn't get published!
                                   }
 
                                   // 3. Profile Fetch
