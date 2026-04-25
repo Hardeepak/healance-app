@@ -1009,63 +1009,74 @@ class FeedScreenState extends State<FeedScreen> {
                     ),
                     // 🚨 2. UPDATE: Fetch actual user details before posting
                     onPressed: () async {
-                      if (titleController.text.isNotEmpty &&
-                          bodyController.text.isNotEmpty) {
-                        // Defaults just in case
-                        String anonName =
-                            'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}';
-                        String anonAvatar = _av(
-                          DateTime.now().millisecondsSinceEpoch,
+                      String title = titleController.text.trim();
+                      String body = bodyController.text.trim();
+
+                      if (title.isEmpty || body.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please fill out both the title and body.'), backgroundColor: Colors.redAccent),
                         );
+                        return;
+                      }
 
-                        // Fetch real logged-in user data
-                        final user = FirebaseAuth.instance.currentUser;
-                        if (user != null) {
-                          final doc = await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(user.uid)
-                              .get();
-                          if (doc.exists) {
-                            anonName = doc.data()?['username'] ?? anonName;
-                            anonAvatar = doc.data()?['avatarUrl'] ?? anonAvatar;
-                          }
+                      // Show AI processing indicator
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => const Center(child: CircularProgressIndicator(color: _accent)),
+                      );
+
+                      // A. FETCH REAL USER DATA (Team's Logic)
+                      String anonName = 'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}';
+                      String anonAvatar = _av(DateTime.now().millisecondsSinceEpoch);
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user != null) {
+                        final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+                        if (doc.exists) {
+                          anonName = doc.data()?['username'] ?? anonName;
+                          anonAvatar = doc.data()?['avatarUrl'] ?? anonAvatar;
                         }
+                      }
 
+                      // B. CALL THE AI ANALYZER
+                      final analysis = await HelanceAIService.analyzePost(body);
+                      
+                      if (!context.mounted) return;
+                      Navigator.pop(context); // Close loader
+
+                      if (analysis['isSafe'] == false) {
+                        Navigator.pop(context); // Close form
+                        _showSafetyInterceptUI(context); // Blocked!
+                      } else {
+                        String aiCategory = analysis['category'];
+                        
                         setState(() {
-                          // Insert the new post at the very top of the global list
                           _posts.insert(
                             0,
                             Post(
-                              selectedCategory,
-                              anonName, // Uses actual anonymous name
+                              aiCategory,
+                              anonName,
                               'Just now',
-                              titleController.text,
-                              bodyController.text,
-                              1, // Start with 1 upvote
-                              0, // 0 comments
-                              false,
-                              _getColorForCategory(selectedCategory),
-                              anonAvatar, // Uses chosen avatar
+                              title,
+                              body,
+                              1,
+                              0,
+                              true, // AI VERIFIED!
+                              _getColorForCategory(aiCategory),
+                              anonAvatar,
                             ),
                           );
-                          // Reset the category view to 'All' so the user sees their post immediately
                           _catIdx = 0;
                         });
 
-                        Navigator.pop(context); // Close the bottom sheet
+                        // C. RECONNECT MEMORY BANK
+                        UserActivityTracker.addPost(body);
+
+                        Navigator.pop(context); // Close form
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Post published anonymously!'),
+                          SnackBar(
+                            content: Text("✅ AI Verified as #$aiCategory & published!"),
                             backgroundColor: Colors.green,
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Please fill out both the title and body.',
-                            ),
-                            backgroundColor: Colors.redAccent,
                           ),
                         );
                       }
@@ -1083,6 +1094,96 @@ class FeedScreenState extends State<FeedScreen> {
         );
       },
     );
+  }
+
+  // --- ROLE 1 TASK 3: SAFETY INTERCEPT UI ---
+  void _showSafetyInterceptUI(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: _bg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Colors.redAccent, width: 2),
+          ),
+          child: Container(
+            width: 450,
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(Icons.warning_rounded, color: Colors.redAccent, size: 48),
+                const SizedBox(height: 16),
+                const Text(
+                  "AI Safety Intercept",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.redAccent,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "Our AI detected language indicating severe distress or self-harm in your draft. You are not alone, and we want to help.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: _textTitle, fontSize: 14, height: 1.5),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.phone),
+                    label: const Text("Connect to 24/7 Crisis Support"),
+                    onPressed: () => _launch('https://www.befrienders.org.my/'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "I'm okay, discard post",
+                    style: TextStyle(color: _textSub),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── THE BRIDGE TO FIREBASE (WRITE) ──
+  Future<void> submitPost(String title, String body, String category,
+      {bool aiVerified = false}) async {
+    if (title.trim().isEmpty || body.trim().isEmpty) return;
+
+    try {
+      final CollectionReference cloudPosts =
+          FirebaseFirestore.instance.collection('posts');
+
+      // 1. Save it to the live database!
+      await cloudPosts.add({
+        'title': title,
+        'content': body,
+        'category': category,
+        'author': 'anon_user',
+        'timestamp': FieldValue.serverTimestamp(),
+        'likes': 1,
+        'ai_verified': aiVerified,
+      });
+
+      print("✅ Post successfully saved to the cloud!");
+    } catch (e) {
+      print("🚨 Error saving post: $e");
+    }
   }
 
   List<Widget> _buildSidePanel() {
@@ -1540,6 +1641,25 @@ class RichPostCard extends StatelessWidget {
                         post.time,
                         style: const TextStyle(color: _textSub, fontSize: 12),
                       ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: post.tagColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          post.category,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: post.tagColor,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -1618,6 +1738,39 @@ class RichPostCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const Spacer(),
+                      if (post.aiSupported)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.amber.withOpacity(0.3),
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.amber.withOpacity(0.1),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.auto_awesome,
+                                color: Colors.amber,
+                                size: 12,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'AI Verified',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.amber,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ],
