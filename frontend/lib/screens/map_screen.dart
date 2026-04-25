@@ -11,82 +11,6 @@ const _card = Color(0xFF1A2A30);
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
 
-  Future<void> seedMapDatabase() async {
-    print("🚨 PULSE 1: Function started!");
-    try {
-      final CollectionReference nodes = FirebaseFirestore.instance.collection(
-        'map_nodes',
-      );
-      print("🚨 PULSE 2: Connected to Firestore instance!");
-
-      final dummyData = [
-        {
-          "name": "Kuala Lumpur",
-          "desc": "Burnout + Dark Thoughts",
-          "lat": 3.1390,
-          "lng": 101.6869,
-          "status": "critical",
-        },
-        {
-          "name": "Subang Jaya",
-          "desc": "Burnout — No 24/7 clinic",
-          "lat": 3.0438,
-          "lng": 101.5859,
-          "status": "high",
-        },
-        {
-          "name": "Penang",
-          "desc": "Stable — Resources adequate",
-          "lat": 5.4141,
-          "lng": 100.3288,
-          "status": "stable",
-        },
-        {
-          "name": "Johor Bahru",
-          "desc": "Financial Anxiety rising",
-          "lat": 1.4927,
-          "lng": 103.7414,
-          "status": "moderate",
-        },
-        {
-          "name": "Kota Bharu",
-          "desc": "Critical Desert",
-          "lat": 6.1254,
-          "lng": 102.2381,
-          "status": "critical",
-        },
-        {
-          "name": "Kuching",
-          "desc": "Isolation + Loneliness",
-          "lat": 1.5533,
-          "lng": 110.3440,
-          "status": "high",
-        },
-        {
-          "name": "Kota Kinabalu",
-          "desc": "Resource Desert — Sabah",
-          "lat": 5.9804,
-          "lng": 116.0735,
-          "status": "critical",
-        },
-        {
-          "name": "Miri",
-          "desc": "Improving — New clinic",
-          "lat": 4.4148,
-          "lng": 114.0089,
-          "status": "improving",
-        },
-      ];
-
-      for (var doc in dummyData) {
-        await nodes.add(doc);
-      }
-      print("🚨 PULSE 3: Dummy data seeded successfully!");
-    } catch (e) {
-      print("🚨 ERROR: $e");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -341,16 +265,6 @@ class MapScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.pinkAccent,
-        onPressed: () async {
-          await seedMapDatabase();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Database Seeded! Check Firebase.')),
-          );
-        },
-        child: const Icon(Icons.downloading),
       ),
     );
   }
