@@ -1,5 +1,23 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
+
+// --- GLOBAL ACTIVITY TRACKER ---
+// Stores the last 3 posts made by the user in this session.
+class UserActivityTracker {
+  static final List<Map<String, String>> lastThreePosts = [];
+
+  static void addPost(String text) {
+    final now = DateTime.now();
+    final timeStr = DateFormat('yyyy-MM-dd HH:mm').format(now);
+    
+    lastThreePosts.insert(0, {'text': text, 'time': timeStr});
+    if (lastThreePosts.length > 3) {
+      lastThreePosts.removeLast();
+    }
+    print("🧠 Activity Saved: $timeStr | Count: ${lastThreePosts.length}");
+  }
+}
 
 class HelanceAIService {
   // 1. GRAB THE HIDDEN VAULT KEY
