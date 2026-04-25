@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 🚨 NEW IMPORT
 
 const _accent = Color(0xFFFF5414);
 const _bg = Color(0xFF0B1416);
 const _card = Color(0xFF1A2A30);
 const _textSub = Color(0xFF8B9DA4);
 
+// Same Pravatar pool used across the app
+// The DiceBear API works flawlessly on Flutter Web without CORS issues.
 const _avatarPool = [
   'https://api.dicebear.com/8.x/notionists/png?seed=Felix',
   'https://api.dicebear.com/8.x/notionists/png?seed=Aneka',
@@ -40,109 +41,58 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool isLogin = true;
+  // FIX: track which avatar the user selects during signup
   int _selectedAvatarIndex = 0;
-  bool _isLoading = false; // Tracks auth state
-
-  // 🚨 CONTROLLERS TO CAPTURE USER INPUT
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _ageController = TextEditingController();
-  final _uniController = TextEditingController();
-
-  String? _selectedGender;
-  String? _selectedState;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _usernameController.dispose();
-    _ageController.dispose();
-    _uniController.dispose();
-    super.dispose();
-  }
-
-  // 🚨 THE AUTHENTICATION ENGINE
-  Future<void> _submitAuth() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter email and password'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      if (isLogin) {
-        // --- LOGIN LOGIC ---
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-      } else {
-        // --- SIGN UP LOGIC ---
-        UserCredential cred = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: password);
-
-        // Save the extra anonymous profile data to Firestore
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(cred.user!.uid)
-            .set({
-              'username': _usernameController.text.trim().isEmpty
-                  ? 'anonymous_user'
-                  : _usernameController.text.trim(),
-              'avatarUrl': _avatarPool[_selectedAvatarIndex],
-              'age': int.tryParse(_ageController.text.trim()) ?? 0,
-              'gender': _selectedGender ?? 'Not Specified',
-              'state': _selectedState ?? 'Unknown',
-              'university': _uniController.text.trim(),
-              'createdAt': FieldValue.serverTimestamp(),
-            });
-      }
-
-      // If successful, navigate to RootScreen
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                RootScreen(selectedAvatarIndex: _selectedAvatarIndex),
-          ),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      // Handle Firebase Errors (e.g., wrong password, email in use)
-      String message = e.message ?? 'An error occurred';
-      if (e.code == 'user-not-found') message = 'No user found for that email.';
-      if (e.code == 'wrong-password') message = 'Wrong password provided.';
-      if (e.code == 'email-already-in-use')
-        message = 'An account already exists for that email.';
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
+      // 👇 TEMPORARY BUTTON TO REFILL THE NEW DATABASE 👇
+      // 👇 ERROR-CATCHING SEED BUTTON 👇
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          try {
+            // Shows a loading indicator
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Seeding... Please wait.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+
+            await seedMapDatabase();
+
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('🔥 New Database Seeded!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (e) {
+            // IF IT BREAKS, THIS PRINTS THE EXACT ERROR!
+            print("🚨 SEED ERROR: $e");
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: $e'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 10),
+                ),
+              );
+            }
+          }
+        },
+        backgroundColor: const Color(0xFFFF5414),
+        icon: const Icon(Icons.upload, color: Colors.white),
+        label: const Text(
+          "SEED DATABASE",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -182,13 +132,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
 
                 if (!isLogin) ...[
+                  // FIX: Avatar picker during signup so users
+                  // don't get a random brown placeholder
                   _buildAvatarPicker(),
                   const SizedBox(height: 20),
 
                   _buildTextField(
                     "Anonymous Username (e.g., quietstriver)",
                     Icons.person_outline,
-                    controller: _usernameController,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -198,13 +149,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           "Age",
                           Icons.cake_outlined,
                           keyboardType: TextInputType.number,
-                          controller: _ageController,
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedGender,
                           isExpanded: true,
                           dropdownColor: _card,
                           style: const TextStyle(color: Colors.white),
@@ -230,15 +179,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     DropdownMenuItem(value: e, child: Text(e)),
                               )
                               .toList(),
-                          onChanged: (val) =>
-                              setState(() => _selectedGender = val),
+                          onChanged: (_) {},
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _selectedState,
                     isExpanded: true,
                     dropdownColor: _card,
                     style: const TextStyle(color: Colors.white),
@@ -282,13 +229,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               (e) => DropdownMenuItem(value: e, child: Text(e)),
                             )
                             .toList(),
-                    onChanged: (val) => setState(() => _selectedState = val),
+                    onChanged: (_) {},
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     "University / College (Optional)",
                     Icons.school_outlined,
-                    controller: _uniController,
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -297,21 +243,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   "Email",
                   Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
-                  controller: _emailController,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   "Password",
                   Icons.lock_outline,
                   isPassword: true,
-                  controller: _passwordController,
                 ),
                 const SizedBox(height: 32),
 
                 ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : _submitAuth, // 🚨 Call Auth logic here
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RootScreen(
+                          // Pass selected avatar index to RootScreen
+                          selectedAvatarIndex: _selectedAvatarIndex,
+                        ),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _accent,
                     foregroundColor: Colors.white,
@@ -319,35 +271,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    // Prevent button color from completely greying out when loading
-                    disabledBackgroundColor: _accent.withOpacity(0.6),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          isLogin ? "Log In" : "Create Account",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                  child: Text(
+                    isLogin ? "Log In" : "Create Account",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextButton(
-                  onPressed: () {
-                    // Toggle state and clear fields when switching modes
-                    setState(() {
-                      isLogin = !isLogin;
-                      _passwordController.clear();
-                    });
-                  },
+                  onPressed: () => setState(() => isLogin = !isLogin),
                   child: Text(
                     isLogin
                         ? "New here? Sign Up"
@@ -363,6 +298,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // FIX: Avatar picker grid — shows real Pravatar faces so the user
+  // picks their look before joining (no more brown placeholder)
   Widget _buildAvatarPicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,16 +349,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // 🚨 Pass the controller down to the actual TextField widget
   Widget _buildTextField(
     String hint,
     IconData icon, {
     bool isPassword = false,
     TextInputType? keyboardType,
-    TextEditingController? controller,
   }) {
     return TextField(
-      controller: controller,
       obscureText: isPassword,
       keyboardType: keyboardType,
       style: const TextStyle(color: Colors.white),
@@ -437,5 +371,86 @@ class _LoginScreenState extends State<LoginScreen> {
         fillColor: _bg,
       ),
     );
+  }
+}
+
+Future<void> seedMapDatabase() async {
+  print("🚨 PULSE 1: Function started!");
+
+  try {
+    final CollectionReference nodes = FirebaseFirestore.instance.collection(
+      'map_nodes',
+    );
+    print("🚨 PULSE 2: Connected to Firestore instance!");
+
+    final dummyData = [
+      {
+        "name": "Kuala Lumpur",
+        "desc": "Burnout + Dark Thoughts",
+        "lat": 3.1390,
+        "lng": 101.6869,
+        "status": "critical",
+      },
+      {
+        "name": "Subang Jaya",
+        "desc": "Burnout — No 24/7 clinic",
+        "lat": 3.0438,
+        "lng": 101.5859,
+        "status": "high",
+      },
+      {
+        "name": "Penang",
+        "desc": "Stable — Resources adequate",
+        "lat": 5.4141,
+        "lng": 100.3288,
+        "status": "stable",
+      },
+      {
+        "name": "Johor Bahru",
+        "desc": "Financial Anxiety rising",
+        "lat": 1.4927,
+        "lng": 103.7414,
+        "status": "moderate",
+      },
+      {
+        "name": "Kota Bharu",
+        "desc": "Critical Desert",
+        "lat": 6.1254,
+        "lng": 102.2381,
+        "status": "critical",
+      },
+      {
+        "name": "Kuching",
+        "desc": "Isolation + Loneliness",
+        "lat": 1.5533,
+        "lng": 110.3440,
+        "status": "high",
+      },
+      {
+        "name": "Kota Kinabalu",
+        "desc": "Resource Desert — Sabah",
+        "lat": 5.9804,
+        "lng": 116.0735,
+        "status": "critical",
+      },
+      {
+        "name": "Miri",
+        "desc": "Improving — New clinic",
+        "lat": 4.4148,
+        "lng": 114.0089,
+        "status": "improving",
+      },
+    ];
+
+    print("🚨 PULSE 3: Starting to upload data...");
+    for (var node in dummyData) {
+      print("🚨 PULSE 4: Trying to upload ${node['name']}...");
+      await nodes.add(node);
+      print("🚨 PULSE 5: Successfully uploaded ${node['name']}!");
+    }
+    print("🔥 PULSE 6: Database Successfully Seeded!");
+  } catch (e) {
+    print("🚨 FATAL ERROR IN SEEDER: $e");
+    rethrow; // Forces the red snackbar to show up
   }
 }
