@@ -9,26 +9,21 @@ const _card = Color(0xFF1A2A30);
 const _textSub = Color(0xFF8B9DA4);
 
 const _avatarPool = [
-  'https://api.dicebear.com/8.x/notionists/png?seed=Felix',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Aneka',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Jack',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Sam',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Nala',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Leo',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Zoe',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Max',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Mia',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Eli',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Lola',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Finn',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Oliver',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Chloe',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Jasper',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Ruby',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Oscar',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Lily',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Milo',
-  'https://api.dicebear.com/8.x/notionists/png?seed=Jade',
+  '🦊',
+  '🐼',
+  '🐨',
+  '🐸',
+  '🐯',
+  '🐧',
+  '🐙',
+  '🦉',
+  '🦄',
+  '🐝',
+  '🐢',
+  '🦋',
+  '🐰',
+  '🐱',
+  '🐳',
 ];
 
 class LoginScreen extends StatefulWidget {
@@ -314,7 +309,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         // TODO: Implement forgot password logic
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text("Forgot Password? Link sent to your email"),
+                            content: Text(
+                              "Forgot Password? Link sent to your email",
+                            ),
                             backgroundColor: _accent,
                           ),
                         );
@@ -421,10 +418,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: CircleAvatar(
                   radius: 24,
-                  backgroundImage: NetworkImage(_avatarPool[i]),
-                ),
-              ),
-            );
+                  backgroundColor: Colors.white10,
+                  child: Text(
+                    _avatarPool[i],
+                    style: const TextStyle(fontSize: 24),
+                  ), // This closes Text
+                ), // This closes CircleAvatar
+              ), // This closes AnimatedContainer
+            ); // This closes GestureDetector
           }),
         ),
       ],
