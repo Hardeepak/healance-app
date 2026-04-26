@@ -19,18 +19,47 @@ class ToolsScreen extends StatefulWidget {
 class _ToolsScreenState extends State<ToolsScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   // Local state for the UI bubbles
   final List<Map<String, dynamic>> _messages = [
     {
-      "text": "Hi! I'm Héalance, your AI sidekick. I noticed you've been exploring the community lately. How are you feeling today?",
-      "isUser": false
+      "text":
+          "Hi! I'm Héalance, your AI sidekick. I noticed you've been exploring the community lately. How are you feeling today?",
+      "isUser": false,
     },
   ];
 
   // Persistent history for the Gemini SDK context
   final List<Content> _chatHistory = [];
   bool _isTyping = false;
+
+  // 1. ADDED: Interactive State for the Step-by-Step Guide
+  final List<Map<String, dynamic>> _roadmapSteps = [
+    {
+      "title": "1. Submit Draft Proposal",
+      "subtitle": "Completed on Tuesday. You did it!",
+      "isCompleted": true,
+      "isRestDay": false,
+    },
+    {
+      "title": "2. Rest Day (Scheduled)",
+      "subtitle": "Take a walk, watch a movie. No studying allowed today.",
+      "isCompleted": false,
+      "isRestDay": true,
+    },
+    {
+      "title": "3. Apply to 3 Local Internships",
+      "subtitle": "Pushed to tomorrow so you can recover your energy first.",
+      "isCompleted": false,
+      "isRestDay": false,
+    },
+    {
+      "title": "4. Update Resume",
+      "subtitle": "Pending.",
+      "isCompleted": false,
+      "isRestDay": false,
+    },
+  ];
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -55,22 +84,22 @@ class _ToolsScreenState extends State<ToolsScreen> {
     });
     _scrollToBottom();
 
-    // 1. Get response from our hardened AI Service
+    // Get response from our hardened AI Service
     // Pass the user's emotional history (last 3 posts) for deep context!
     final response = await HelanceAIService.getChatbotResponse(
-      text, 
+      text,
       history: _chatHistory,
       recentUserPosts: UserActivityTracker.lastThreePosts,
     );
 
-    // 2. Update local UI state
+    // Update local UI state
     setState(() {
       _messages.add({"text": response, "isUser": false});
       _isTyping = false;
-      
-      // 3. Update persistent history for next turn context
-      _chatHistory.add(Content.text(text)); // What user said
-      _chatHistory.add(Content.model([TextPart(response)])); // What AI said
+
+      // Update persistent history for next turn context
+      _chatHistory.add(Content.text(text));
+      _chatHistory.add(Content.model([TextPart(response)]));
     });
     _scrollToBottom();
   }
@@ -168,7 +197,11 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 if (_isTyping)
                   const Text(
                     "typing...",
-                    style: TextStyle(fontSize: 12, color: Colors.amber, fontStyle: FontStyle.italic),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.amber,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
               ],
             ),
@@ -202,7 +235,10 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 ),
                 filled: true,
                 fillColor: _bg,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -252,7 +288,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
             color: _card,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: _border),
+              side: const BorderSide(color: _border),
             ),
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -297,9 +333,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
         ),
         const SizedBox(height: 16),
         // CARD 2: SLEEP TRACKER
-        // FIX: removed "synced Apple Health data" — we don't have that
-        // feature and our platform is fully anonymous. Using in-app
-        // activity timestamps only, which we do actually track.
         Expanded(
           flex: 4,
           child: Card(
@@ -308,7 +341,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
             color: _card,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: _border),
+              side: const BorderSide(color: _border),
             ),
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -332,8 +365,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    // FIX: no Apple Health mention — uses only anonymous
-                    // in-app activity (timestamp of posts/scrolling sessions)
                     "We noticed high app activity between 2 AM and 5 AM over the last 3 nights. Disrupted sleep can directly affect your mood and energy levels.",
                     style: TextStyle(
                       fontSize: 13,
@@ -351,7 +382,6 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        // FIX: honest, anonymous-safe source description
                         "Based on anonymous in-app usage timestamps only.",
                         style: TextStyle(
                           fontSize: 10,
@@ -375,7 +405,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
             color: _card,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: _border),
+              side: const BorderSide(color: _border),
             ),
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -436,7 +466,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
       color: _card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: _border),
+        side: const BorderSide(color: _border),
       ),
       child: Column(
         children: [
@@ -444,7 +474,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.02),
-              border: Border(bottom: BorderSide(color: _border)),
+              border: const Border(bottom: BorderSide(color: _border)),
             ),
             child: const Row(
               children: [
@@ -481,29 +511,17 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     style: TextStyle(fontSize: 13, color: Colors.orangeAccent),
                   ),
                   const Divider(height: 40, color: _border),
-                  _step(
-                    Icons.check_circle_rounded,
-                    Colors.greenAccent,
-                    "1. Submit Draft Proposal",
-                    "Completed on Tuesday. You did it!",
-                  ),
-                  _step(
-                    Icons.pause_circle_filled,
-                    Colors.orangeAccent,
-                    "2. Rest Day (Scheduled)",
-                    "Take a walk, watch a movie. No studying allowed today.",
-                  ),
-                  _step(
-                    Icons.radio_button_unchecked,
-                    _textSub,
-                    "3. Apply to 3 Local Internships",
-                    "Pushed to tomorrow so you can recover your energy first.",
-                  ),
-                  _step(
-                    Icons.radio_button_unchecked,
-                    _textSub,
-                    "4. Update Resume",
-                    "Pending.",
+
+                  // 2. UPDATED: Generates the list dynamically and passes the index
+                  // FIX: Removed Expanded and added shrinkWrap/NeverScrollableScrollPhysics 
+                  // to prevent infinite height crashes on mobile screens.
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _roadmapSteps.length,
+                    itemBuilder: (context, index) {
+                      return _step(index);
+                    },
                   ),
                 ],
               ),
@@ -514,34 +532,76 @@ class _ToolsScreenState extends State<ToolsScreen> {
     );
   }
 
-  Widget _step(IconData icon, Color color, String title, String subtitle) {
+  // 3. UPDATED: Made the step widget interactive and linked to state
+  Widget _step(int index) {
+    final step = _roadmapSteps[index];
+    final bool isCompleted = step['isCompleted'];
+    final bool isRestDay = step['isRestDay'];
+
+    IconData icon;
+    Color color;
+
+    // Determine visual style based on current state
+    if (isCompleted) {
+      icon = Icons.check_circle_rounded;
+      color = Colors.greenAccent;
+    } else if (isRestDay) {
+      icon = Icons.pause_circle_filled;
+      color = Colors.orangeAccent;
+    } else {
+      icon = Icons.radio_button_unchecked;
+      color = _textSub;
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 28),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _roadmapSteps[index]['isCompleted'] = !isCompleted;
+              });
+            },
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: Icon(icon, color: color, size: 28),
+            ),
+          ),
           const SizedBox(width: 16),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: icon == Icons.check_circle_rounded
-                        ? _textSub
-                        : _textTitle,
-                    decoration: icon == Icons.check_circle_rounded
-                        ? TextDecoration.lineThrough
-                        : null,
-                  ),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _roadmapSteps[index]['isCompleted'] = !isCompleted;
+                });
+              },
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      step['title'],
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        // Greys out the text and adds strikethrough if checked
+                        color: isCompleted ? _textSub : _textTitle,
+                        decoration: isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      step['subtitle'],
+                      style: TextStyle(fontSize: 13, color: _textSub),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(subtitle, style: TextStyle(fontSize: 13, color: _textSub)),
-              ],
+              ),
             ),
           ),
         ],

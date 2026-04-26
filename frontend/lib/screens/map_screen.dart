@@ -11,7 +11,7 @@ const _card = Color(0xFF1A2A30);
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
 
-  Future<void> seedMapDatabase() async {
+  /*Future<void> seedMapDatabase() async {
     print("🚨 PULSE 1: Function started!");
     try {
       final CollectionReference nodes = FirebaseFirestore.instance.collection(
@@ -85,7 +85,7 @@ class MapScreen extends StatelessWidget {
     } catch (e) {
       print("🚨 ERROR: $e");
     }
-  }
+  }*/ //seed sample data into Firestore with this function, then comment it out again to avoid duplicates
 
   @override
   Widget build(BuildContext context) {
@@ -341,16 +341,6 @@ class MapScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.pinkAccent,
-        onPressed: () async {
-          await seedMapDatabase();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Database Seeded! Check Firebase.')),
-          );
-        },
-        child: const Icon(Icons.downloading),
       ),
     );
   }

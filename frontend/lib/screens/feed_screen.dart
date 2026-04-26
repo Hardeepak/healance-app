@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:frontend/services/ai_service.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -61,6 +62,7 @@ class Post {
   final int points, comments;
   final bool aiSupported;
   final Color tagColor;
+
   const Post(
     this.category,
     this.user,
@@ -81,7 +83,7 @@ final List<Post> _posts = [
     'empty_room',
     '1d',
     "I haven't spoken out loud to anyone in 3 days.",
-    "Online classes make it so easy to disappear. Nobody checks in. Not even once. I turned my camera off in week two and have basically been invisible since. Part of me wonders if anyone would even notice if I stopped showing up entirely.",
+    "Online classes make it so easy to disappear. Nobody checks in. Not even once.",
     750,
     180,
     true,
@@ -105,7 +107,7 @@ final List<Post> _posts = [
     'solo_eater',
     '12h',
     "Eating lunch in the library bathroom again.",
-    "Too scared to sit in the cafeteria alone. People look at you like something's wrong with you.",
+    "Too scared to sit in the cafeteria alone.",
     890,
     210,
     true,
@@ -113,47 +115,11 @@ final List<Post> _posts = [
     _av(2),
   ),
   Post(
-    'Loneliness',
-    'ghosted_guy',
-    '2d',
-    "Does anyone actually maintain friendships after high school?",
-    "Everyone moved on. I'm still calling people who never pick up.",
-    320,
-    45,
-    false,
-    Colors.blueGrey,
-    _av(3),
-  ),
-  Post(
-    'Loneliness',
-    'invisible_kid',
-    '3h',
-    "I said bye to my classmates and none of them heard me.",
-    "I just stood there, waited, then walked away. I don't think I exist to them.",
-    1100,
-    290,
-    true,
-    Colors.blueGrey,
-    _av(4),
-  ),
-  Post(
-    'Loneliness',
-    'midnight_scroller',
-    '1h',
-    "It's 2am and I have nobody to text.",
-    "So here I am posting this instead.",
-    670,
-    134,
-    false,
-    Colors.blueGrey,
-    _av(5),
-  ),
-  Post(
     'Overthinking',
     'brain_buzz',
     '5h',
     "Replaying a conversation from 3 years ago.",
-    "Why did I say that? They definitely still think about it. My brain won't let it go. I was 17.",
+    "Why did I say that? They definitely still think about it.",
     544,
     212,
     true,
@@ -164,7 +130,7 @@ final List<Post> _posts = [
     'Overthinking',
     'what_if_guy',
     '1h',
-    "If I don't get an A I won't graduate, won't get hired, will be homeless.",
+    "If I don't get an A I won't graduate.",
     "The spiral happens so fast. One bad mark and I've catastrophised my entire future.",
     900,
     150,
@@ -173,23 +139,11 @@ final List<Post> _posts = [
     _av(10),
   ),
   Post(
-    'Overthinking',
-    'decision_loop',
-    '6h',
-    "I can't choose a lunch option without a 20-minute internal debate.",
-    "Every small decision feels enormous. I'm completely drained by 9am from just existing.",
-    388,
-    91,
-    true,
-    Colors.tealAccent,
-    _av(12),
-  ),
-  Post(
     'Bullying',
     'silent_cry',
     '12h',
     "Someone made a meme about me in the uni WhatsApp group.",
-    "200 people laughing. I don't want to go to class tomorrow. Or ever. I screenshotted it and I keep opening it.",
+    "200 people laughing. I don't want to go to class tomorrow.",
     1200,
     400,
     true,
@@ -197,35 +151,11 @@ final List<Post> _posts = [
     _av(16),
   ),
   Post(
-    'Bullying',
-    'fake_friends',
-    '2h',
-    "I caught them making fun of my presentation in the back row.",
-    "They thought I couldn't see them texting and laughing. It destroyed something in me.",
-    650,
-    120,
-    true,
-    Colors.red,
-    _av(17),
-  ),
-  Post(
-    'Bullying',
-    'anon_hate',
-    '1d',
-    "Getting horrible DMs from an anonymous account.",
-    "They know specific things only people in my course would know. I feel unsafe on campus now.",
-    880,
-    250,
-    true,
-    Colors.red,
-    _av(18),
-  ),
-  Post(
     'Academic Burnout',
     'tired_scholar',
     '1h',
     "I stared at a blank Word doc for 4 hours straight.",
-    "Thesis due in a week. Brain completely fried. I used to love this subject.",
+    "Thesis due in a week. Brain completely fried.",
     512,
     89,
     true,
@@ -234,22 +164,10 @@ final List<Post> _posts = [
   ),
   Post(
     'Academic Burnout',
-    'caffeine_veins',
-    '3h',
-    "Is it normal to cry over a 2.8 GPA?",
-    "I studied so hard this semester. I feel like a massive disappointment to everyone.",
-    820,
-    140,
-    true,
-    Colors.redAccent,
-    _av(23),
-  ),
-  Post(
-    'Academic Burnout',
     'drop_out_thought',
     '8h',
     "I've thought about dropping out every single day this semester.",
-    "I won't. I can't. But the thought keeps coming back like it's offering something.",
+    "I won't. I can't. But the thought keeps coming back.",
     1100,
     310,
     true,
@@ -261,7 +179,7 @@ final List<Post> _posts = [
     'ghosted_again',
     '2h',
     "My friend group made a separate chat without me.",
-    "I saw the notifications on my roommate's phone. I pretended I didn't notice.",
+    "I saw the notifications on my roommate's phone.",
     890,
     150,
     true,
@@ -273,7 +191,7 @@ final List<Post> _posts = [
     'quietstriver',
     '4h',
     "Can't stop comparing myself to peers who got FAANG offers.",
-    "Everyone from my cohort seems to have figured it out. I freeze in every interview.",
+    "Everyone from my cohort seems to have figured it out.",
     312,
     47,
     true,
@@ -281,35 +199,11 @@ final List<Post> _posts = [
     _av(35),
   ),
   Post(
-    'Career Anxiety',
-    'linkedin_dread',
-    '2h',
-    "Opening LinkedIn has become a form of self-harm.",
-    "Another classmate. Another dream job. I close the app and stare at the ceiling.",
-    880,
-    201,
-    true,
-    Colors.indigoAccent,
-    _av(36),
-  ),
-  Post(
-    'Family Issues',
-    'black_sheep',
-    '12h',
-    "My parents refuse to acknowledge my mental health.",
-    "They tell me to 'pray more' or 'stop being lazy.' It makes everything worse.",
-    840,
-    210,
-    true,
-    Colors.deepOrange,
-    _av(1),
-  ),
-  Post(
     'Family Issues',
     'high_expectations',
     '1h',
     "My parents sacrificed so much. I can't afford to fail them.",
-    "Every B+ feels like I've betrayed years of their hard work. The weight is crushing.",
+    "Every B+ feels like I've betrayed years of their hard work.",
     920,
     240,
     true,
@@ -329,23 +223,11 @@ final List<Post> _posts = [
     _av(6),
   ),
   Post(
-    'Dark Thoughts',
-    'invisible_pain',
-    '3h',
-    "I fantasise about disappearing and nobody noticing for days.",
-    "Not dying. Just ceasing. A pause button on existing. The thought is loud lately.",
-    800,
-    187,
-    true,
-    Colors.red,
-    _av(7),
-  ),
-  Post(
     'Financial Anxiety',
     'broke_student',
     '5h',
     "How do people afford to live right now?",
-    "Rent up, groceries insane. My PTPTN runs out by the 2nd week of every month.",
+    "Rent up, groceries insane.",
     1200,
     310,
     false,
@@ -353,35 +235,11 @@ final List<Post> _posts = [
     _av(9),
   ),
   Post(
-    'Financial Anxiety',
-    'skip_meals',
-    '3h',
-    "Skipped lunch again to make it to Friday.",
-    "It's Thursday. I have RM4.50. I tell people I'm just 'not hungry.'",
-    980,
-    280,
-    true,
-    Colors.green,
-    _av(10),
-  ),
-  Post(
-    'Body Insecurity',
-    'mirror_hate',
-    '8h',
-    "Gained 10kg this semester. I dread every photo.",
-    "How do people stay fit studying 12 hours a day and stress-eating at midnight?",
-    422,
-    88,
-    false,
-    Colors.pinkAccent,
-    _av(14),
-  ),
-  Post(
     'Social Media Trap',
     'highlight_reel',
     '30m',
     "Everyone on Instagram looks like they have life figured out at 22.",
-    "Perfect holidays. Perfect bodies. Perfect careers. I know it's curated. Still destroys me.",
+    "Perfect holidays. Perfect bodies. Perfect careers.",
     1340,
     420,
     true,
@@ -393,7 +251,7 @@ final List<Post> _posts = [
     '25_and_lost',
     '1h',
     "Graduating in 3 months and I've never been more terrified.",
-    "Everyone asks 'what's next?' I genuinely don't know. That feels shameful at 22.",
+    "Everyone asks 'what's next?' I genuinely don't know.",
     1050,
     310,
     true,
@@ -401,23 +259,11 @@ final List<Post> _posts = [
     _av(25),
   ),
   Post(
-    'Trauma',
-    'not_over_it',
-    '6h',
-    "People say 'that was years ago.' My body didn't get the memo.",
-    "Smells. Sounds. Certain phrases. I'm back there instantly. Exhausted by my own triggers.",
-    870,
-    220,
-    true,
-    Colors.deepPurple,
-    _av(32),
-  ),
-  Post(
     'Phone Addiction',
     'screen_zombie',
     '4h',
     "I pick up my phone before I even open my eyes in the morning.",
-    "First and last thing I see every day. My attention span is functionally gone.",
+    "First and last thing I see every day.",
     760,
     175,
     true,
@@ -428,49 +274,13 @@ final List<Post> _posts = [
     'Procrastination',
     'paralysed_14',
     '3h',
-    "My to-do list has 14 items. Been staring at it since 9am. It's 4pm.",
-    "I kept reorganising the list instead of doing anything on it. Classic.",
+    "My to-do list has 14 items. Been staring at it since 9am.",
+    "I kept reorganising the list instead of doing anything on it.",
     870,
     220,
     true,
     Colors.orange,
     _av(1),
-  ),
-  Post(
-    'Feeling Unattractive',
-    'rejected_again',
-    '6h',
-    "Left on read after the first date. I know why.",
-    "I'm not conventionally attractive. I've accepted that. Doesn't hurt less.",
-    590,
-    135,
-    false,
-    Colors.pink,
-    _av(6),
-  ),
-  Post(
-    'No One To Talk To',
-    'burden_fear',
-    '1h',
-    "I need to talk to someone but I don't want to be a burden.",
-    "Everyone has their own problems. Why would I pile mine on top? So I don't.",
-    1050,
-    290,
-    true,
-    Colors.teal,
-    _av(10),
-  ),
-  Post(
-    'Identity & Self-Worth',
-    'who_am_i',
-    '4h',
-    "I perform different versions of myself for different people. Who is the original?",
-    "Home version. Friend version. Work version. I've lost track of the real one.",
-    720,
-    168,
-    true,
-    Colors.limeAccent,
-    _av(15),
   ),
   Post(
     'Sleep Struggles',
@@ -489,7 +299,7 @@ final List<Post> _posts = [
     'attachment_anxiety',
     '3h',
     "I love him but the moment he's quiet I spiral into 'he hates me.'",
-    "I know it's my anxiety not reality. The fear is so loud. How do I fix this?",
+    "I know it's my anxiety not reality. How do I fix this?",
     870,
     215,
     true,
@@ -527,10 +337,11 @@ List<Post> get _trending {
   return sorted.take(3).toList();
 }
 
-class _Resource {
+class Resource {
   final String title, desc, btnText, imageUrl, url;
   final Color color;
-  const _Resource(
+
+  const Resource(
     this.title,
     this.desc,
     this.btnText,
@@ -540,22 +351,23 @@ class _Resource {
   );
 }
 
-Map<String, List<_Resource>> _sidebarResources = {
-  // Add your specific resources here or use the fallback built in _buildSidePanel
-};
+Map<String, List<Resource>> _sidebarResources = {};
 
 class FeedScreen extends StatefulWidget {
   final int initialCategoryIndex;
+
   const FeedScreen({super.key, this.initialCategoryIndex = 0});
+
   @override
-  State<FeedScreen> createState() => _FeedScreenState();
+  State<FeedScreen> createState() => FeedScreenState();
 }
 
-class _FeedScreenState extends State<FeedScreen> {
+class FeedScreenState extends State<FeedScreen> {
   late int _catIdx;
   final Set<int> _upvoted = {};
   final Set<int> _downvoted = {};
-  String _searchQuery = ""; // Search filter state
+
+  String _searchQuery = "";
 
   @override
   void initState() {
@@ -673,7 +485,16 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  // ALL FILTERING HAPPENS HERE (Search Bar + Category Bar)
+  @override
+  void didUpdateWidget(covariant FeedScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCategoryIndex != widget.initialCategoryIndex) {
+      setState(() {
+        _catIdx = widget.initialCategoryIndex;
+      });
+    }
+  }
+
   List<Post> get _filtered {
     var list = _posts;
     if (_catIdx != 0) {
@@ -751,6 +572,7 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     bool isWide = MediaQuery.of(context).size.width > 900;
+
     return Scaffold(
       backgroundColor: _bg,
       body: Row(
@@ -767,7 +589,6 @@ class _FeedScreenState extends State<FeedScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // WORKING SEARCH BAR
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -782,7 +603,7 @@ class _FeedScreenState extends State<FeedScreen> {
                               Icons.search,
                               color: _textSub,
                             ),
-                            hintText: "Search Héalance...",
+                            hintText: "Search Healance...",
                             hintStyle: const TextStyle(color: _textSub),
                             filled: true,
                             fillColor: _card,
@@ -794,11 +615,13 @@ class _FeedScreenState extends State<FeedScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+
                       _buildPostInputFake(),
+
                       const SizedBox(height: 16),
                       _buildTrendingStrip(),
                       const SizedBox(height: 16),
-                      _CategoryBar(
+                      CategoryBar(
                         selected: _catIdx,
                         onTap: (i) => setState(() => _catIdx = i),
                       ),
@@ -806,28 +629,30 @@ class _FeedScreenState extends State<FeedScreen> {
                       ...List.generate(_filtered.length, (i) {
                         final post = _filtered[i];
                         final globalIdx = _posts.indexOf(post);
-                        return _RichPostCard(
+
+                        return RichPostCard(
                           post: post,
                           upvoted: _upvoted.contains(globalIdx),
                           downvoted: _downvoted.contains(globalIdx),
                           onUpvote: () => setState(() {
-                            _upvoted.contains(globalIdx)
-                                ? _upvoted.remove(globalIdx)
-                                : {
-                                    _upvoted.add(globalIdx),
-                                    _downvoted.remove(globalIdx),
-                                  };
+                            if (_upvoted.contains(globalIdx)) {
+                              _upvoted.remove(globalIdx);
+                            } else {
+                              _upvoted.add(globalIdx);
+                              _downvoted.remove(globalIdx);
+                            }
                           }),
                           onDownvote: () => setState(() {
-                            _downvoted.contains(globalIdx)
-                                ? _downvoted.remove(globalIdx)
-                                : {
-                                    _downvoted.add(globalIdx),
-                                    _upvoted.remove(globalIdx),
-                                  };
+                            if (_downvoted.contains(globalIdx)) {
+                              _downvoted.remove(globalIdx);
+                            } else {
+                              _downvoted.add(globalIdx);
+                              _upvoted.remove(globalIdx);
+                            }
                           }),
                         );
                       }),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -848,7 +673,8 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Widget _buildTrendingStrip() {
-    final trending = _trending;
+    final trendingList = _trending;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -896,9 +722,17 @@ class _FeedScreenState extends State<FeedScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: trending.length,
-            itemBuilder: (_, i) =>
-                _TrendingCard(post: trending[i], rank: i + 1),
+            itemCount: trendingList.length,
+            itemBuilder: (context, i) {
+              return _TrendingCard(
+                post: trendingList[i],
+                rank: i + 1,
+                onTap: () {
+                  final newIdx = _categories.indexOf(trendingList[i].category);
+                  if (newIdx != -1) setState(() => _catIdx = newIdx);
+                },
+              );
+            },
           ),
         ),
       ],
@@ -920,11 +754,30 @@ class _FeedScreenState extends State<FeedScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              const CircleAvatar(
-                radius: 16,
-                backgroundImage: NetworkImage(
-                  'https://api.dicebear.com/8.x/notionists/png?seed=You',
-                ),
+              StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(FirebaseAuth.instance.currentUser?.uid ?? 'guest')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  String avatarUrl =
+                      'https://api.dicebear.com/8.x/notionists/png?seed=fallback';
+
+                  if (snapshot.hasData &&
+                      snapshot.data != null &&
+                      snapshot.data!.exists) {
+                    final data = snapshot.data!.data() as Map<String, dynamic>?;
+                    if (data != null && data.containsKey('avatarUrl')) {
+                      avatarUrl = data['avatarUrl']?.toString() ?? avatarUrl;
+                    }
+                  }
+
+                  return CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.white10,
+                    backgroundImage: NetworkImage(avatarUrl),
+                  );
+                },
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -951,8 +804,331 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
+  // 🚨 AI-POWERED CREATE POST FORM
   void _showCreatePostForm(BuildContext context) {
-    // Keep your exact create post form logic here
+    final titleController = TextEditingController();
+    final bodyController = TextEditingController();
+    bool isClassifying = false;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _card,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 20,
+                right: 20,
+                top: 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Create an Anonymous Post",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "This is a safe space. Your identity is hidden. AI will automatically sort your post.",
+                      style: TextStyle(color: _textSub, fontSize: 13),
+                    ),
+                    const Divider(color: _border, height: 30),
+
+                    TextField(
+                      controller: titleController,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: "Title",
+                        hintStyle: const TextStyle(color: _textSub),
+                        filled: true,
+                        fillColor: _bg,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: bodyController,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: "Share what's on your mind...",
+                        hintStyle: const TextStyle(color: _textSub),
+                        filled: true,
+                        fillColor: _bg,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _accent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          disabledBackgroundColor: _accent.withOpacity(0.6),
+                        ),
+                        onPressed: isClassifying
+                            ? null
+                            : () async {
+                                if (titleController.text.isNotEmpty &&
+                                    bodyController.text.isNotEmpty) {
+                                  // 1. Turn on loading spinner
+                                  setModalState(() => isClassifying = true);
+
+                                  // 2. AI Categorization & Safety Check
+                                  String detectedCategory =
+                                      'Loneliness'; // Fallback
+                                  bool isSafePost =
+                                      true; // Track safety globally
+
+                                  try {
+                                    final combinedText =
+                                        "TITLE: ${titleController.text}\nBODY: ${bodyController.text}";
+
+                                    // 🚨 Calls your Backend Dev's exact function
+                                    final aiResult =
+                                        await HelanceAIService.analyzePost(
+                                          combinedText,
+                                        );
+
+                                    // 🚨 SCOPE FIX: Check safety INSIDE the try block
+                                    if (aiResult['isSafe'] == false) {
+                                      isSafePost = false;
+                                    } else {
+                                      detectedCategory =
+                                          aiResult['category'] as String;
+                                      if (!_categories.contains(
+                                        detectedCategory,
+                                      )) {
+                                        detectedCategory = 'Overthinking';
+                                      }
+                                      // Tell tracker about this post!
+                                      UserActivityTracker.addPost(combinedText);
+                                    }
+                                  } catch (e) {
+                                    debugPrint("AI Classification failed: $e");
+                                  }
+
+                                  // 🚨 RESTORED UI: The Safety Intercept Check
+                                  if (!isSafePost) {
+                                    setModalState(() => isClassifying = false);
+                                    Navigator.pop(
+                                      context,
+                                    ); // Close the bottom sheet immediately
+
+                                    // Trigger the Intercept UI
+                                    if (context.mounted) {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (context) => AlertDialog(
+                                          backgroundColor: _card,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          title: const Row(
+                                            children: [
+                                              Icon(
+                                                Icons.shield_rounded,
+                                                color: Colors.redAccent,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Safety Alert',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          content: const Text(
+                                            "We hear you, and you are not alone. Your safety is incredibly important. Please reach out to someone who can help right now.",
+                                            style: TextStyle(
+                                              color: _textTitle,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text(
+                                                "Go Back",
+                                                style: TextStyle(
+                                                  color: _textSub,
+                                                ),
+                                              ),
+                                            ),
+                                            ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    Colors.redAccent,
+                                                foregroundColor: Colors.white,
+                                              ),
+                                              onPressed: () async {
+                                                const url =
+                                                    'https://www.befrienders.org.my/';
+                                                if (!await launchUrl(
+                                                  Uri.parse(url),
+                                                )) {
+                                                  debugPrint(
+                                                    'Could not launch $url',
+                                                  );
+                                                }
+                                              },
+                                              icon: const Icon(
+                                                Icons.phone,
+                                                size: 16,
+                                              ),
+                                              label: const Text(
+                                                "Talk to Befrienders",
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                    return; // STOP the function here so the post doesn't get published!
+                                  }
+
+                                  // 3. Profile Fetch
+                                  String anonName =
+                                      'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}';
+                                  String anonAvatar = _av(
+                                    DateTime.now().millisecondsSinceEpoch,
+                                  );
+
+                                  final user =
+                                      FirebaseAuth.instance.currentUser;
+                                  if (user != null) {
+                                    try {
+                                      final doc = await FirebaseFirestore
+                                          .instance
+                                          .collection('users')
+                                          .doc(user.uid)
+                                          .get();
+                                      if (doc.exists && doc.data() != null) {
+                                        final data =
+                                            doc.data() as Map<String, dynamic>?;
+                                        if (data != null) {
+                                          anonName =
+                                              data['username']?.toString() ??
+                                              anonName;
+                                          anonAvatar =
+                                              data['avatarUrl']?.toString() ??
+                                              anonAvatar;
+                                        }
+                                      }
+                                    } catch (e) {
+                                      debugPrint("Profile fetch error: $e");
+                                    }
+                                  }
+
+                                  if (!context.mounted) return;
+
+                                  // 4. Save and Update UI
+                                  setState(() {
+                                    _posts.insert(
+                                      0,
+                                      Post(
+                                        detectedCategory,
+                                        anonName,
+                                        'Just now',
+                                        titleController.text,
+                                        bodyController.text,
+                                        1,
+                                        0,
+                                        true,
+                                        _getColorForCategory(detectedCategory),
+                                        anonAvatar,
+                                      ),
+                                    );
+                                    _catIdx = 0;
+                                  });
+
+                                  setModalState(() => isClassifying = false);
+                                  Navigator.pop(context);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Post sorted into #$detectedCategory!',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Please fill out both the title and body.',
+                                      ),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: isClassifying
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.auto_awesome, size: 18),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "Post Anonymously",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   List<Widget> _buildSidePanel() {
@@ -960,29 +1136,21 @@ class _FeedScreenState extends State<FeedScreen> {
     final resources =
         _sidebarResources[cat] ??
         [
-          const _Resource(
+          const Resource(
             'Headspace',
             'Learn to meditate and live mindfully.',
             'Try Headspace',
-            'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=500',
+            'https://images.unsplash.com/photo-1528319725582-ddc096101511?w=500',
             Colors.orangeAccent,
             'https://www.headspace.com/',
           ),
-          const _Resource(
+          const Resource(
             'Meetup Malaysia',
             'Find low-pressure local groups for hobbies you love.',
             'Explore Meetup',
-            'https://images.unsplash.com/photo-1529156069898-49953eb1b5ea?w=500',
+            'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500',
             Colors.pinkAccent,
             'https://www.meetup.com/cities/my/',
-          ),
-          const _Resource(
-            'Anytime Fitness',
-            'Physical health drives mental health. 3-Day Free Trial.',
-            'Claim Free Trial',
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500',
-            Colors.purpleAccent,
-            'https://www.anytimefitness.my/try-us-free/',
           ),
         ];
 
@@ -994,7 +1162,7 @@ class _FeedScreenState extends State<FeedScreen> {
     return widgets;
   }
 
-  Widget _buildActionCard(_Resource r) {
+  Widget _buildActionCard(Resource r) {
     return Card(
       elevation: 0,
       color: _card,
@@ -1069,45 +1237,95 @@ class _FeedScreenState extends State<FeedScreen> {
 class _TrendingCard extends StatelessWidget {
   final Post post;
   final int rank;
-  const _TrendingCard({required this.post, required this.rank});
+  final VoidCallback onTap;
+
+  const _TrendingCard({
+    required this.post,
+    required this.rank,
+    required this.onTap,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 240,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _card,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: rank == 1
-              ? Colors.amber.withOpacity(0.5)
-              : Colors.grey.withOpacity(0.4),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            post.title,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: _textTitle,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 240,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: _card,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: rank == 1
+                ? Colors.amber.withOpacity(0.5)
+                : Colors.grey.withOpacity(0.4),
           ),
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              post.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: _textTitle,
+              ),
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                const Icon(
+                  Icons.arrow_upward_rounded,
+                  size: 14,
+                  color: Colors.blueAccent,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${post.points}',
+                  style: const TextStyle(
+                    color: Colors.blueAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: post.tagColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '#${post.category.replaceAll(' ', '')}',
+                    style: TextStyle(
+                      color: post.tagColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _CategoryBar extends StatelessWidget {
+class CategoryBar extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onTap;
-  const _CategoryBar({required this.selected, required this.onTap});
+
+  const CategoryBar({super.key, required this.selected, required this.onTap});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -1116,7 +1334,7 @@ class _CategoryBar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: _categories.length,
-        itemBuilder: (_, i) {
+        itemBuilder: (context, i) {
           final sel = i == selected;
           return GestureDetector(
             onTap: () => onTap(i),
@@ -1144,13 +1362,13 @@ class _CategoryBar extends StatelessWidget {
   }
 }
 
-// ── THE FULLY WORKING POST CARD ───────────────────────────────────────────
-class _RichPostCard extends StatelessWidget {
+class RichPostCard extends StatelessWidget {
   final Post post;
   final bool upvoted, downvoted;
   final VoidCallback onUpvote, onDownvote;
 
-  const _RichPostCard({
+  const RichPostCard({
+    super.key,
     required this.post,
     required this.upvoted,
     required this.downvoted,
@@ -1278,6 +1496,7 @@ class _RichPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int displayPoints = post.points + (upvoted ? 1 : 0) - (downvoted ? 1 : 0);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 0,
@@ -1336,6 +1555,88 @@ class _RichPostCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 🚨 UI RESTORED HERE: The Category and AI Verified badges are back!
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundColor: Colors.white10,
+                        backgroundImage: NetworkImage(post.avatarUrl),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        post.user,
+                        style: const TextStyle(
+                          color: _textSub,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        post.time,
+                        style: const TextStyle(color: _textSub, fontSize: 12),
+                      ),
+
+                      const Spacer(), // Pushes the badges to the right side
+                      // Category Tag
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: post.tagColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '#${post.category.replaceAll(' ', '')}',
+                          style: TextStyle(
+                            color: post.tagColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      // AI Verified Badge
+                      if (post.aiSupported) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.blueAccent.withOpacity(0.3),
+                            ),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.verified,
+                                color: Colors.blueAccent,
+                                size: 12,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'AI Verified',
+                                style: TextStyle(
+                                  color: Colors.blueAccent,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   Text(
                     post.title,
                     style: const TextStyle(
@@ -1382,10 +1683,8 @@ class _RichPostCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // THE NATIVE SHARE BUTTON
                       InkWell(
                         onTap: () async {
-                          // This triggers the native OS share sheet!
                           await Share.share(
                             "Check out this post on Héalance:\n\n${post.title}\n${post.body}",
                           );
@@ -1403,7 +1702,7 @@ class _RichPostCard extends StatelessWidget {
                               SizedBox(width: 6),
                               Text(
                                 'Share',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   color: _textSub,
                                   fontWeight: FontWeight.bold,
