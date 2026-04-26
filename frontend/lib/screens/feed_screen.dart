@@ -12,54 +12,53 @@ const _border = Color(0xFF2B3C42);
 const _textTitle = Color(0xFFD7DADC);
 const _textSub = Color(0xFF8B9DA4);
 
+// ── NEW: EMOJI POOL FROM LOGIN SCREEN ─────────────────────────────────────
+const _avatarPool = [
+  '🦊',
+  '🐼',
+  '🐨',
+  '🐸',
+  '🐯',
+  '🐧',
+  '🐙',
+  '🦉',
+  '🦄',
+  '🐝',
+  '🐢',
+  '🦋',
+  '🐰',
+  '🐱',
+  '🐳',
+];
+
 // ── FIX 4: Static flag — mood modal shown only once per app session ──────
 bool _moodModalShownThisSession = false;
 
-// ── FIX 2: EXPANDED AVATAR PALETTE — 15 distinct colors (matches login_screen.dart) ──
-// Extended so indices 0–14 are all unique, no repeats
-const List<Color> _avatarPalette = [
-  Color(0xFF37474F), // 0  blue-grey
-  Color(0xFF4E342E), // 1  brown
-  Color(0xFF283593), // 2  deep blue
-  Color(0xFF1B5E20), // 3  dark green
-  Color(0xFF4A148C), // 4  deep purple
-  Color(0xFF880E4F), // 5  dark pink
-  Color(0xFF006064), // 6  cyan teal
-  Color(0xFF33691E), // 7  olive green
-  Color(0xFF5D4037), // 8  warm brown
-  Color(0xFF01579B), // 9  navy blue
-  Color(0xFF3E2723), // 10 espresso
-  Color(0xFF212121), // 11 near-black
-  Color(0xFF0D47A1), // 12 royal blue  ← was repeat of 0
-  Color(0xFF558B2F), // 13 medium green ← was repeat of 1
-  Color(0xFF6A1B9A), // 14 violet       ← was repeat of 2
-];
-
-// ── AVATAR HELPER ─────────────────────────────────────────────────────────
-Color _avatarColor(int index) {
-  return _avatarPalette[index % _avatarPalette.length];
-}
-
-// ── AVATAR WIDGET ─────────────────────────────────────────────────────────
+// ── AVATAR WIDGET (UPDATED FOR EMOJIS) ────────────────────────────────────
 class _AvatarWidget extends StatelessWidget {
-  final int index;
+  final String emoji;
   final double radius;
-  const _AvatarWidget({required this.index, this.radius = 14});
+  const _AvatarWidget({required this.emoji, this.radius = 14});
 
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: radius,
-      backgroundColor: _avatarColor(index),
-      child: Icon(Icons.person, size: radius * 1.1, color: Colors.white70),
+      backgroundColor: Colors.transparent, // Clear background for Emojis
+      child: Text(emoji, style: TextStyle(fontSize: radius * 1.3)),
     );
   }
 }
 
 // ── POST MODEL ────────────────────────────────────────────────────────────
 class Post {
-  final String category, user, time, title, body;
-  final int points, comments, avatarIndex;
+  final String category,
+      user,
+      time,
+      title,
+      body,
+      avatarEmoji; // Now expects a String Emoji
+  final int points, comments;
   final bool aiSupported;
   final Color tagColor;
 
@@ -73,7 +72,7 @@ class Post {
     this.comments,
     this.aiSupported,
     this.tagColor,
-    this.avatarIndex,
+    this.avatarEmoji,
   );
 }
 
@@ -89,7 +88,7 @@ final List<Post> _posts = [
     180,
     true,
     Colors.blueGrey,
-    0,
+    _avatarPool[0],
   ),
   Post(
     'Loneliness',
@@ -101,7 +100,7 @@ final List<Post> _posts = [
     62,
     false,
     Colors.blueGrey,
-    1,
+    _avatarPool[1],
   ),
   Post(
     'Loneliness',
@@ -113,7 +112,7 @@ final List<Post> _posts = [
     210,
     true,
     Colors.blueGrey,
-    2,
+    _avatarPool[2],
   ),
   Post(
     'Loneliness',
@@ -125,7 +124,7 @@ final List<Post> _posts = [
     265,
     true,
     Colors.blueGrey,
-    3,
+    _avatarPool[3],
   ),
   Post(
     'Loneliness',
@@ -137,7 +136,7 @@ final List<Post> _posts = [
     145,
     true,
     Colors.blueGrey,
-    4,
+    _avatarPool[4],
   ),
   Post(
     'Overthinking',
@@ -149,7 +148,7 @@ final List<Post> _posts = [
     212,
     true,
     Colors.tealAccent,
-    5,
+    _avatarPool[5],
   ),
   Post(
     'Overthinking',
@@ -161,7 +160,7 @@ final List<Post> _posts = [
     150,
     true,
     Colors.tealAccent,
-    6,
+    _avatarPool[6],
   ),
   Post(
     'Overthinking',
@@ -173,7 +172,7 @@ final List<Post> _posts = [
     80,
     false,
     Colors.tealAccent,
-    7,
+    _avatarPool[7],
   ),
   Post(
     'Bullying',
@@ -185,7 +184,7 @@ final List<Post> _posts = [
     400,
     true,
     Colors.red,
-    8,
+    _avatarPool[8],
   ),
   Post(
     'Bullying',
@@ -197,7 +196,7 @@ final List<Post> _posts = [
     250,
     true,
     Colors.red,
-    9,
+    _avatarPool[9],
   ),
   Post(
     'Bullying',
@@ -209,7 +208,7 @@ final List<Post> _posts = [
     310,
     true,
     Colors.red,
-    10,
+    _avatarPool[10],
   ),
   Post(
     'Academic Burnout',
@@ -221,7 +220,7 @@ final List<Post> _posts = [
     89,
     true,
     Colors.redAccent,
-    11,
+    _avatarPool[11],
   ),
   Post(
     'Academic Burnout',
@@ -233,7 +232,7 @@ final List<Post> _posts = [
     310,
     true,
     Colors.redAccent,
-    12,
+    _avatarPool[12],
   ),
   Post(
     'Academic Burnout',
@@ -245,7 +244,7 @@ final List<Post> _posts = [
     168,
     false,
     Colors.redAccent,
-    13,
+    _avatarPool[13],
   ),
   Post(
     'Academic Burnout',
@@ -257,7 +256,7 @@ final List<Post> _posts = [
     190,
     true,
     Colors.redAccent,
-    14,
+    _avatarPool[14],
   ),
   Post(
     'Academic Burnout',
@@ -269,7 +268,7 @@ final List<Post> _posts = [
     200,
     true,
     Colors.redAccent,
-    0,
+    _avatarPool[0],
   ),
   Post(
     'Friendship Drama',
@@ -281,7 +280,7 @@ final List<Post> _posts = [
     150,
     true,
     Colors.purpleAccent,
-    1,
+    _avatarPool[1],
   ),
   Post(
     'Friendship Drama',
@@ -293,7 +292,7 @@ final List<Post> _posts = [
     270,
     true,
     Colors.purpleAccent,
-    2,
+    _avatarPool[2],
   ),
   Post(
     'Friendship Drama',
@@ -305,7 +304,7 @@ final List<Post> _posts = [
     180,
     true,
     Colors.purpleAccent,
-    3,
+    _avatarPool[3],
   ),
   Post(
     'Career Anxiety',
@@ -317,7 +316,7 @@ final List<Post> _posts = [
     201,
     true,
     Colors.indigoAccent,
-    4,
+    _avatarPool[4],
   ),
   Post(
     'Career Anxiety',
@@ -329,7 +328,7 @@ final List<Post> _posts = [
     140,
     false,
     Colors.indigoAccent,
-    5,
+    _avatarPool[5],
   ),
   Post(
     'Career Anxiety',
@@ -341,7 +340,7 @@ final List<Post> _posts = [
     47,
     true,
     Colors.indigoAccent,
-    6,
+    _avatarPool[6],
   ),
   Post(
     'Dark Thoughts',
@@ -353,7 +352,7 @@ final List<Post> _posts = [
     103,
     true,
     Colors.red,
-    7,
+    _avatarPool[7],
   ),
   Post(
     'Dark Thoughts',
@@ -365,7 +364,7 @@ final List<Post> _posts = [
     175,
     true,
     Colors.red,
-    8,
+    _avatarPool[8],
   ),
   Post(
     'Dark Thoughts',
@@ -377,7 +376,7 @@ final List<Post> _posts = [
     290,
     true,
     Colors.red,
-    9,
+    _avatarPool[9],
   ),
   Post(
     'Financial Anxiety',
@@ -389,7 +388,7 @@ final List<Post> _posts = [
     280,
     true,
     Colors.green,
-    10,
+    _avatarPool[10],
   ),
   Post(
     'Financial Anxiety',
@@ -401,7 +400,7 @@ final List<Post> _posts = [
     210,
     true,
     Colors.green,
-    11,
+    _avatarPool[11],
   ),
   Post(
     'Financial Anxiety',
@@ -413,7 +412,7 @@ final List<Post> _posts = [
     310,
     false,
     Colors.green,
-    12,
+    _avatarPool[12],
   ),
   Post(
     'Financial Anxiety',
@@ -425,7 +424,7 @@ final List<Post> _posts = [
     195,
     true,
     Colors.green,
-    13,
+    _avatarPool[13],
   ),
   Post(
     'Family Issues',
@@ -437,7 +436,7 @@ final List<Post> _posts = [
     240,
     true,
     Colors.deepOrange,
-    14,
+    _avatarPool[14],
   ),
   Post(
     'Family Issues',
@@ -449,7 +448,7 @@ final List<Post> _posts = [
     210,
     true,
     Colors.deepOrange,
-    0,
+    _avatarPool[0],
   ),
   Post(
     'Family Issues',
@@ -461,7 +460,7 @@ final List<Post> _posts = [
     235,
     true,
     Colors.deepOrange,
-    1,
+    _avatarPool[1],
   ),
   Post(
     'Social Media Trap',
@@ -473,7 +472,7 @@ final List<Post> _posts = [
     420,
     true,
     Colors.cyan,
-    2,
+    _avatarPool[2],
   ),
   Post(
     'Social Media Trap',
@@ -485,7 +484,7 @@ final List<Post> _posts = [
     158,
     true,
     Colors.cyan,
-    3,
+    _avatarPool[3],
   ),
   Post(
     'Future Doubts',
@@ -497,7 +496,7 @@ final List<Post> _posts = [
     310,
     true,
     Colors.amber,
-    4,
+    _avatarPool[4],
   ),
   Post(
     'Future Doubts',
@@ -509,7 +508,7 @@ final List<Post> _posts = [
     300,
     true,
     Colors.amber,
-    5,
+    _avatarPool[5],
   ),
   Post(
     'Future Doubts',
@@ -521,7 +520,7 @@ final List<Post> _posts = [
     275,
     true,
     Colors.amber,
-    6,
+    _avatarPool[6],
   ),
   Post(
     'Trauma',
@@ -533,7 +532,7 @@ final List<Post> _posts = [
     195,
     true,
     Colors.deepPurple,
-    7,
+    _avatarPool[7],
   ),
   Post(
     'Phone Addiction',
@@ -545,7 +544,7 @@ final List<Post> _posts = [
     175,
     true,
     Colors.lightGreen,
-    8,
+    _avatarPool[8],
   ),
   Post(
     'Procrastination',
@@ -557,7 +556,7 @@ final List<Post> _posts = [
     310,
     true,
     Colors.orange,
-    9,
+    _avatarPool[9],
   ),
   Post(
     'Procrastination',
@@ -569,7 +568,7 @@ final List<Post> _posts = [
     220,
     true,
     Colors.orange,
-    10,
+    _avatarPool[10],
   ),
   Post(
     'Sleep Struggles',
@@ -581,7 +580,7 @@ final List<Post> _posts = [
     88,
     true,
     Colors.indigoAccent,
-    11,
+    _avatarPool[11],
   ),
   Post(
     'Sleep Struggles',
@@ -593,7 +592,7 @@ final List<Post> _posts = [
     160,
     true,
     Colors.indigoAccent,
-    12,
+    _avatarPool[12],
   ),
   Post(
     'Relationships',
@@ -605,7 +604,7 @@ final List<Post> _posts = [
     215,
     true,
     const Color(0xFFFF4D7D),
-    13,
+    _avatarPool[13],
   ),
   Post(
     'Relationships',
@@ -617,7 +616,7 @@ final List<Post> _posts = [
     240,
     true,
     const Color(0xFFFF4D7D),
-    14,
+    _avatarPool[14],
   ),
   Post(
     'No One To Talk To',
@@ -629,7 +628,7 @@ final List<Post> _posts = [
     290,
     true,
     Colors.teal,
-    0,
+    _avatarPool[0],
   ),
   Post(
     'No One To Talk To',
@@ -641,7 +640,7 @@ final List<Post> _posts = [
     330,
     true,
     Colors.teal,
-    1,
+    _avatarPool[1],
   ),
   Post(
     'Body Insecurity',
@@ -653,7 +652,7 @@ final List<Post> _posts = [
     160,
     true,
     Colors.pinkAccent,
-    2,
+    _avatarPool[2],
   ),
   Post(
     'Identity & Self-Worth',
@@ -665,7 +664,7 @@ final List<Post> _posts = [
     255,
     true,
     Colors.limeAccent,
-    3,
+    _avatarPool[3],
   ),
   Post(
     'Identity & Self-Worth',
@@ -677,7 +676,7 @@ final List<Post> _posts = [
     280,
     true,
     Colors.limeAccent,
-    4,
+    _avatarPool[4],
   ),
   Post(
     'Academic Burnout',
@@ -689,7 +688,7 @@ final List<Post> _posts = [
     210,
     true,
     Colors.redAccent,
-    5,
+    _avatarPool[5],
   ),
   Post(
     'Dark Thoughts',
@@ -701,7 +700,7 @@ final List<Post> _posts = [
     380,
     true,
     Colors.red,
-    6,
+    _avatarPool[6],
   ),
 ];
 
@@ -789,17 +788,12 @@ Color _typeBadgeColor(ResourceType t) {
   }
 }
 
-// ── FIX 1: RELIABLE FALLBACK IMAGE URLS ──────────────────────────────────
-// All resource images now use Unsplash with stable topic-matched queries.
-// The old png/logo URLs (Pomofocus, Notion, etc.) were fragile — replaced
-// with curated Unsplash photos that match each resource's theme.
-
 final Map<String, List<Resource>> _sidebarResources = {
   'Academic Burnout': [
     Resource(
       title: 'Atomic Habits',
       desc:
-          "James Clear's groundbreaking guide to building tiny habits that compound into massive academic results. The book that changed how millions study.",
+          "James Clear's groundbreaking guide to building tiny habits that compound into massive academic results.",
       btnText: 'View on Goodreads',
       color: const Color(0xFFFF6B35),
       url: 'https://www.goodreads.com/book/show/40121378-atomic-habits',
@@ -810,34 +804,29 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'Pomofocus',
       desc:
-          'The cleanest Pomodoro timer on the web. 25 min focus, 5 min break. Break your paralysis one sprint at a time.',
+          'The cleanest Pomodoro timer on the web. 25 min focus, 5 min break.',
       btnText: 'Start Timer',
       color: Colors.redAccent,
       url: 'https://pomofocus.io/',
       type: ResourceType.app,
-      // FIX 1: was pomofocus.io/icons/... (broken) → stable Unsplash
       coverImageUrl:
           'https://images.unsplash.com/photo-1495364141860-b0d03eccd065?w=400&q=80',
     ),
     Resource(
       title: 'Notion Student Planner',
-      desc:
-          'Free, beautiful student planner template used by thousands. Track assignments, deadlines, and goals — all in one place.',
+      desc: 'Free, beautiful student planner template used by thousands.',
       btnText: 'Get Template',
       color: Colors.white,
       url: 'https://www.notion.so/templates/student-planner',
       type: ResourceType.link,
-      // FIX 1: was Unsplash photo already, keeping same style
       coverImageUrl:
           'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=400&q=80',
     ),
   ],
-
   'Loneliness': [
     Resource(
       title: 'The Art of Being Alone',
-      desc:
-          "Vironika Tugaleva's beautiful meditation on solitude — learning to enjoy your own company and stop waiting for others to fill the void.",
+      desc: "Vironika Tugaleva's beautiful meditation on solitude.",
       btnText: 'View on Goodreads',
       color: const Color(0xFF5C6BC0),
       url:
@@ -848,8 +837,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Bumble BFF',
-      desc:
-          'Swipe to find real friends — not dates — in your city. Low pressure, no awkwardness. Thousands of students use it to find their people.',
+      desc: 'Swipe to find real friends — not dates — in your city.',
       btnText: 'Try Bumble BFF',
       color: const Color(0xFFFFD000),
       url: 'https://bumble.com/bff',
@@ -859,8 +847,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: '7 Cups',
-      desc:
-          'Free chat with trained listeners right now. Anonymous. No waitlist. Real humans who actually get it.',
+      desc: 'Free chat with trained listeners right now. Anonymous.',
       btnText: 'Talk Now',
       color: const Color(0xFF00C8A0),
       url: 'https://www.7cups.com/',
@@ -869,12 +856,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80',
     ),
   ],
-
   'Overthinking': [
     Resource(
       title: 'The Worry Trick',
       desc:
-          "Dr David Carbonell explains why anxiety tricks your brain and gives you the exact tools to stop the mental loops. Game-changer for overthinkers.",
+          "Dr David Carbonell explains why anxiety tricks your brain and gives you the exact tools to stop the mental loops.",
       btnText: 'View on Goodreads',
       color: Colors.teal,
       url: 'https://www.goodreads.com/book/show/29771006-the-worry-trick',
@@ -895,8 +881,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Anxiety & Overthinking Test',
-      desc:
-          'Free GAD-7 generalised anxiety screener. Takes 2 minutes, gives you a real sense of where you are and what kind of help to look for.',
+      desc: 'Free GAD-7 generalised anxiety screener. Takes 2 minutes.',
       btnText: 'Take the Test',
       color: Colors.tealAccent,
       url: 'https://www.mdcalc.com/calc/1727/gad-7-general-anxiety-disorder-7',
@@ -905,12 +890,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&q=80',
     ),
   ],
-
   'Bullying': [
     Resource(
       title: 'Cyber999 Malaysia (MCMC)',
-      desc:
-          'Official Malaysian government channel to report cyberbullying. Your report can get content taken down and action taken.',
+      desc: 'Official Malaysian government channel to report cyberbullying.',
       btnText: 'Report Now',
       color: Colors.red,
       url: 'https://www.mcmc.gov.my/en/consumer/complaints/cyber999',
@@ -931,8 +914,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'BetterHelp',
-      desc:
-          'Match with a licensed online therapist in 48 hours. Proper professional support for when things get serious.',
+      desc: 'Match with a licensed online therapist in 48 hours.',
       btnText: 'Get Matched',
       color: const Color(0xFF214F6E),
       url: 'https://www.betterhelp.com/',
@@ -941,12 +923,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80',
     ),
   ],
-
   'Career Anxiety': [
     Resource(
       title: '16Personalities Career Test',
-      desc:
-          'The most popular free personality + career test online. Millions have used it to find what actually fits them — not what looks safe.',
+      desc: 'The most popular free personality + career test online.',
       btnText: 'Take Career Quiz',
       color: const Color(0xFF4E4187),
       url: 'https://www.16personalities.com/',
@@ -956,8 +936,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: '80,000 Hours',
-      desc:
-          'Research-backed guide to finding a career that actually matters. Built for confused graduates who want more than a job.',
+      desc: 'Research-backed guide to finding a career that actually matters.',
       btnText: 'Explore Careers',
       color: const Color(0xFF1A1A2E),
       url: 'https://80000hours.org/',
@@ -967,8 +946,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: "So Good They Can't Ignore You",
-      desc:
-          "Cal Newport's antidote to the 'follow your passion' trap. Required reading if you have no idea what career actually suits you.",
+      desc: "Cal Newport's antidote to the 'follow your passion' trap.",
       btnText: 'View on Goodreads',
       color: Colors.orange,
       url:
@@ -978,12 +956,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=400&q=80',
     ),
   ],
-
   'Dark Thoughts': [
     Resource(
       title: 'Befrienders Malaysia',
-      desc:
-          'Free, confidential 24/7 emotional support. You are not alone. Trained listeners ready right now.',
+      desc: 'Free, confidential 24/7 emotional support. You are not alone.',
       btnText: 'Contact Now',
       color: Colors.redAccent,
       url: 'https://www.befrienders.org.my/',
@@ -993,8 +969,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Mind Kami',
-      desc:
-          'Malaysian youth mental health platform built for students. Local resources, local context.',
+      desc: 'Malaysian youth mental health platform built for students.',
       btnText: 'Find Resources',
       color: const Color(0xFF5B5BD6),
       url: 'https://www.mindkami.com/',
@@ -1004,8 +979,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'BetterHelp',
-      desc:
-          'Match with a licensed therapist online in 48 hours. Proper professional support when you need more than a hotline.',
+      desc: 'Match with a licensed therapist online in 48 hours.',
       btnText: 'Get Matched',
       color: const Color(0xFF214F6E),
       url: 'https://www.betterhelp.com/',
@@ -1014,12 +988,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80',
     ),
   ],
-
   'Financial Anxiety': [
     Resource(
       title: 'I Will Teach You To Be Rich',
-      desc:
-          "Ramit Sethi's no-BS personal finance book for young people. Practical, funny, Malaysian-applicable. Gets you from broke to intentional.",
+      desc: "Ramit Sethi's no-BS personal finance book for young people.",
       btnText: 'View on Goodreads',
       color: Colors.green,
       url:
@@ -1030,8 +1002,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Budget Tracker Template',
-      desc:
-          'Free pre-made Google Sheets budget for Malaysian students. Track ringgit in and out, see exactly where it goes.',
+      desc: 'Free pre-made Google Sheets budget for Malaysian students.',
       btnText: 'Get Template',
       color: Colors.teal,
       url:
@@ -1043,7 +1014,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'GXBank Malaysia',
       desc:
-          'Digital bank with no minimum balance, no fees, and high savings interest. Open in minutes from your phone.',
+          'Digital bank with no minimum balance, no fees, and high savings interest.',
       btnText: 'Open Account',
       color: Colors.lightGreen,
       url: 'https://www.gxbank.com.my/',
@@ -1052,12 +1023,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&q=80',
     ),
   ],
-
   'Friendship Drama': [
     Resource(
       title: 'Platonic',
       desc:
-          "Marisa G. Franco's science-backed guide to making and keeping real adult friendships. The book nobody told you existed.",
+          "Marisa G. Franco's science-backed guide to making and keeping real adult friendships.",
       btnText: 'View on Goodreads',
       color: Colors.purpleAccent,
       url: 'https://www.goodreads.com/book/show/58782741-platonic',
@@ -1067,8 +1037,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Bumble BFF',
-      desc:
-          "If your friend group isn't working, build a new one. Meet real friends in your city — zero pressure.",
+      desc: "If your friend group isn't working, build a new one.",
       btnText: 'Try Bumble BFF',
       color: const Color(0xFFFFD000),
       url: 'https://bumble.com/bff',
@@ -1079,7 +1048,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'BetterHelp',
       desc:
-          'Talking to a therapist about relationship patterns is one of the most underrated things you can do. Available online, your schedule.',
+          'Talking to a therapist about relationship patterns is one of the most underrated things you can do.',
       btnText: 'Try BetterHelp',
       color: const Color(0xFF214F6E),
       url: 'https://www.betterhelp.com/',
@@ -1088,12 +1057,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80',
     ),
   ],
-
   'Family Issues': [
     Resource(
       title: 'Adult Children of Emotionally Immature Parents',
       desc:
-          "Lindsay Gibson's transformative book on healing from parents who couldn't meet your emotional needs. For anyone who grew up feeling invisible at home.",
+          "Lindsay Gibson's transformative book on healing from parents who couldn't meet your emotional needs.",
       btnText: 'View on Goodreads',
       color: Colors.deepOrange,
       url:
@@ -1104,8 +1072,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'MIASA Malaysia',
-      desc:
-          'Local Malaysian counseling and mental health awareness support. People who understand our cultural context.',
+      desc: 'Local Malaysian counseling and mental health awareness support.',
       btnText: 'Get Local Help',
       color: Colors.teal,
       url: 'https://miasa.org.my/',
@@ -1115,8 +1082,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'BetterHelp',
-      desc:
-          'Family issues are some of the hardest to unpack alone. Match with a licensed therapist online in 48 hours.',
+      desc: 'Family issues are some of the hardest to unpack alone.',
       btnText: 'Get Matched',
       color: const Color(0xFF214F6E),
       url: 'https://www.betterhelp.com/',
@@ -1125,12 +1091,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80',
     ),
   ],
-
   'Social Media Trap': [
     Resource(
       title: 'Digital Minimalism',
       desc:
-          "Cal Newport explains why social media is designed to hijack your attention — and how to reclaim your life without quitting entirely.",
+          "Cal Newport explains why social media is designed to hijack your attention.",
       btnText: 'View on Goodreads',
       color: Colors.blueGrey,
       url: 'https://www.goodreads.com/book/show/40672036-digital-minimalism',
@@ -1141,7 +1106,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'One Sec App',
       desc:
-          'Forces a 1-second pause before you open Instagram or TikTok. That one second breaks the reflex. Used by 400k+ people.',
+          'Forces a 1-second pause before you open Instagram or TikTok. Used by 400k+ people.',
       btnText: 'Get the App',
       color: Colors.indigoAccent,
       url: 'https://one-sec.app/',
@@ -1151,8 +1116,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'The Social Dilemma (Netflix)',
-      desc:
-          "The documentary that made Silicon Valley insiders speak out. Watch it and you'll never look at your feed the same way.",
+      desc: "The documentary that made Silicon Valley insiders speak out.",
       btnText: 'Watch on Netflix',
       color: Colors.red,
       url: 'https://www.netflix.com/title/81254224',
@@ -1161,12 +1125,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&q=80',
     ),
   ],
-
   'Phone Addiction': [
     Resource(
       title: 'Forest App',
-      desc:
-          'Plant a virtual tree. Every time you pick up your phone it dies. 1M+ people have grown a forest by staying focused.',
+      desc: 'Plant a virtual tree. Every time you pick up your phone it dies.',
       btnText: 'Plant a Tree',
       color: Colors.green,
       url: 'https://www.forestapp.cc/',
@@ -1177,7 +1139,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'How to Break Up with Your Phone',
       desc:
-          "Catherine Price's practical 30-day plan to stop compulsive scrolling. Not about quitting — about using your phone on your terms.",
+          "Catherine Price's practical 30-day plan to stop compulsive scrolling.",
       btnText: 'View on Goodreads',
       color: const Color(0xFF8D6E63),
       url:
@@ -1188,8 +1150,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Primitive Technology (YouTube)',
-      desc:
-          'The most calming, screen-free hobby content on the internet. Replace doom-scrolling with something that actually fascinates you.',
+      desc: 'The most calming, screen-free hobby content on the internet.',
       btnText: 'Watch Channel',
       color: Colors.lightGreen,
       url: 'https://www.youtube.com/@primitivetechnology9550',
@@ -1198,12 +1159,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=400&q=80',
     ),
   ],
-
   'Procrastination': [
     Resource(
       title: 'Focusmate',
       desc:
-          'Book a 50-min session with a real human and work side by side over video. Body-doubling is the most underrated procrastination hack.',
+          'Book a 50-min session with a real human and work side by side over video.',
       btnText: 'Book Session',
       color: Colors.orange,
       url: 'https://www.focusmate.com/',
@@ -1214,7 +1174,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'Goblin Tools',
       desc:
-          'AI that breaks down your overwhelming tasks into tiny, specific, non-scary steps. Free. Life-changing for ADHD brains.',
+          'AI that breaks down your overwhelming tasks into tiny, specific, non-scary steps. Free.',
       btnText: 'Try It Free',
       color: Colors.green,
       url: 'https://goblin.tools/',
@@ -1225,7 +1185,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'Eat That Frog',
       desc:
-          "Brian Tracy's classic 21 productivity principles. The frog is your worst task — and you learn to eat it first. Short, actionable, and actually works.",
+          "Brian Tracy's classic 21 productivity principles. Short, actionable, and actually works.",
       btnText: 'View on Goodreads',
       color: Colors.deepOrange,
       url: 'https://www.goodreads.com/book/show/95887.Eat_That_Frog_',
@@ -1234,12 +1194,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=80',
     ),
   ],
-
   'Sleep Struggles': [
     Resource(
       title: 'Rain & Thunder ASMR (YouTube)',
       desc:
-          '8 hours of heavy rain sounds — the most streamed sleep aid on YouTube. No commentary, no ads mid-sleep, just rain.',
+          '8 hours of heavy rain sounds — the most streamed sleep aid on YouTube.',
       btnText: 'Listen Now',
       color: Colors.indigo,
       url: 'https://www.youtube.com/watch?v=q76bMs-NwRk',
@@ -1249,8 +1208,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Why We Sleep',
-      desc:
-          "Matthew Walker's paradigm-shifting science of sleep. After this book you will actually want to sleep 8 hours.",
+      desc: "Matthew Walker's paradigm-shifting science of sleep.",
       btnText: 'View on Goodreads',
       color: Colors.deepPurple,
       url: 'https://www.goodreads.com/book/show/34466963-why-we-sleep',
@@ -1261,7 +1219,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'Sleep Cycle App',
       desc:
-          'Tracks your sleep phases using your phone mic and wakes you at the lightest moment so you feel human, not destroyed.',
+          'Tracks your sleep phases using your phone mic and wakes you at the lightest moment.',
       btnText: 'Get the App',
       color: Colors.purpleAccent,
       url: 'https://www.sleepcycle.com/',
@@ -1270,12 +1228,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1506792006437-256b665541e2?w=400&q=80',
     ),
   ],
-
   'Body Insecurity': [
     Resource(
       title: 'Anytime Fitness — Free 3-Day Pass',
       desc:
-          'Try any Anytime Fitness gym in Malaysia free for 3 days. Movement changes how you feel about your body faster than anything else.',
+          'Movement changes how you feel about yourself faster than anything else.',
       btnText: 'Claim Free Trial',
       color: Colors.purpleAccent,
       url: 'https://www.anytimefitness.my/try-us-free/',
@@ -1286,7 +1243,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'More Than a Body',
       desc:
-          "Lindsay and Lexie Kite's groundbreaking book on body image resilience. Changes how you see yourself from the inside out.",
+          "Lindsay and Lexie Kite's groundbreaking book on body image resilience.",
       btnText: 'View on Goodreads',
       color: Colors.pink,
       url: 'https://www.goodreads.com/book/show/51858258-more-than-a-body',
@@ -1297,7 +1254,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'Blogilates (YouTube)',
       desc:
-          "Cassey Ho's body-positive Pilates workouts. Free forever, all levels, no shame. Millions of students use this to feel better.",
+          "Cassey Ho's body-positive Pilates workouts. Free forever, all levels, no shame.",
       btnText: 'Watch Channel',
       color: Colors.pinkAccent,
       url: 'https://www.youtube.com/@blogilates',
@@ -1306,12 +1263,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80',
     ),
   ],
-
   'Future Doubts': [
     Resource(
       title: 'Ikigai Career Test',
-      desc:
-          'Find where passion, skill, and purpose overlap. The Japanese concept that helps you figure out what you should actually be doing.',
+      desc: 'Find where passion, skill, and purpose overlap.',
       btnText: 'Take the Test',
       color: Colors.amber,
       url: 'https://ikigaitest.com/',
@@ -1322,7 +1277,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'Designing Your Life',
       desc:
-          "Stanford professors Bill Burnett and Dave Evans teach you to prototype your life like a designer. The bestselling antidote to 'what do I do with my life.'",
+          "Stanford professors Bill Burnett and Dave Evans teach you to prototype your life like a designer.",
       btnText: 'View on Goodreads',
       color: Colors.orange,
       url: 'https://www.goodreads.com/book/show/26046333-designing-your-life',
@@ -1332,8 +1287,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Woebot',
-      desc:
-          'CBT-based AI emotional support chatbot. Free. No waitlist. Helps you reframe the catastrophising about your future.',
+      desc: 'CBT-based AI emotional support chatbot. Free. No waitlist.',
       btnText: 'Try Woebot',
       color: const Color(0xFF00AAFF),
       url: 'https://woebothealth.com/',
@@ -1342,12 +1296,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=400&q=80',
     ),
   ],
-
   'Trauma': [
     Resource(
       title: 'The Body Keeps the Score',
       desc:
-          "Bessel van der Kolk's landmark book on how trauma lives in your body — and the therapies that actually free you from it.",
+          "Bessel van der Kolk's landmark book on how trauma lives in your body.",
       btnText: 'View on Goodreads',
       color: Colors.deepPurple,
       url:
@@ -1358,8 +1311,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: '7 Cups',
-      desc:
-          'Free online chat with trained volunteer listeners. Anonymous. No appointment needed. Available right now.',
+      desc: 'Free online chat with trained volunteer listeners. Anonymous.',
       btnText: 'Talk Now',
       color: const Color(0xFF00C8A0),
       url: 'https://www.7cups.com/',
@@ -1370,7 +1322,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'BetterHelp',
       desc:
-          'Trauma requires a professional. Match with a licensed therapist who specialises in trauma, online, in 48 hours.',
+          'Trauma requires a professional. Match with a licensed therapist online.',
       btnText: 'Get Matched',
       color: const Color(0xFF214F6E),
       url: 'https://www.betterhelp.com/',
@@ -1379,12 +1331,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80',
     ),
   ],
-
   'No One To Talk To': [
     Resource(
       title: '7 Cups',
-      desc:
-          'Free chat with trained listeners. Anonymous. Available right now. No sign-up required.',
+      desc: 'Free chat with trained listeners. Anonymous. Available right now.',
       btnText: 'Talk Now',
       color: const Color(0xFF00C8A0),
       url: 'https://www.7cups.com/',
@@ -1394,8 +1344,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Befrienders Malaysia',
-      desc:
-          "Free 24/7 hotline. Just to be heard. You don't need a reason. You don't need to be 'bad enough.'",
+      desc: "Free 24/7 hotline. Just to be heard. You don't need a reason.",
       btnText: 'Call Now',
       color: Colors.red,
       url: 'https://www.befrienders.org.my/',
@@ -1405,8 +1354,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Woebot',
-      desc:
-          "AI-powered emotional support, CBT-based, free. It's not a replacement for humans but it's there at 2am when humans aren't.",
+      desc: "AI-powered emotional support, CBT-based, free.",
       btnText: 'Try Woebot',
       color: const Color(0xFF00AAFF),
       url: 'https://woebothealth.com/',
@@ -1415,12 +1363,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=400&q=80',
     ),
   ],
-
   'Identity & Self-Worth': [
     Resource(
       title: 'The Gifts of Imperfection',
-      desc:
-          "Brene Brown's guide to letting go of who you think you should be and embracing who you actually are.",
+      desc: "Brene Brown's guide to letting go of who you think you should be.",
       btnText: 'View on Goodreads',
       color: Colors.limeAccent,
       url:
@@ -1431,8 +1377,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     ),
     Resource(
       title: 'Values in Action (VIA) Test',
-      desc:
-          'Free psychology-backed test from the University of Pennsylvania. Discover your core character strengths — what makes you, you.',
+      desc: 'Free psychology-backed test from the University of Pennsylvania.',
       btnText: 'Take Free Test',
       color: Colors.amber,
       url: 'https://www.viacharacter.org/survey/account/register',
@@ -1452,12 +1397,10 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80',
     ),
   ],
-
   'Relationships': [
     Resource(
       title: 'Attachment Style Quiz',
-      desc:
-          "Free quiz: discover if you're anxious, avoidant, or secure — and finally understand why you act the way you do in relationships.",
+      desc: "Free quiz: discover if you're anxious, avoidant, or secure.",
       btnText: 'Take Quiz',
       color: const Color(0xFFFF4D7D),
       url: 'https://www.attachmentproject.com/attachment-style-quiz/',
@@ -1468,7 +1411,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'Attached',
       desc:
-          'Amir Levine and Rachel Heller explain the science of adult attachment. The book that explains why love is so hard.',
+          'Amir Levine and Rachel Heller explain the science of adult attachment.',
       btnText: 'View on Goodreads',
       color: Colors.pink,
       url: 'https://www.goodreads.com/book/show/9547888-attached',
@@ -1479,7 +1422,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'BetterHelp',
       desc:
-          'Work through your relationship patterns with a licensed therapist. Available online, matched in 48 hours.',
+          'Work through your relationship patterns with a licensed therapist.',
       btnText: 'Get Matched',
       color: const Color(0xFF214F6E),
       url: 'https://www.betterhelp.com/',
@@ -1488,12 +1431,11 @@ final Map<String, List<Resource>> _sidebarResources = {
           'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80',
     ),
   ],
-
   'Feeling Unattractive': [
     Resource(
       title: 'Anytime Fitness — Free 3-Day Pass',
       desc:
-          'Movement changes how you feel about yourself faster than anything else. Try any Malaysian branch free for 3 days.',
+          'Movement changes how you feel about yourself faster than anything else.',
       btnText: 'Claim Free Trial',
       color: Colors.purpleAccent,
       url: 'https://www.anytimefitness.my/try-us-free/',
@@ -1504,7 +1446,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: 'Glow Up (Netflix)',
       desc:
-          'Make-up artists compete to transform themselves. Genuinely uplifting — a reminder that style is an art form, not a standard.',
+          'Make-up artists compete to transform themselves. Genuinely uplifting.',
       btnText: 'Watch on Netflix',
       color: Colors.pinkAccent,
       url: 'https://www.netflix.com/title/80217499',
@@ -1515,7 +1457,7 @@ final Map<String, List<Resource>> _sidebarResources = {
     Resource(
       title: '7 Cups',
       desc:
-          'Talk through confidence and self-image struggles with a trained listener. Anonymous, free, and judgment-free.',
+          'Talk through confidence and self-image struggles with a trained listener.',
       btnText: 'Talk Now',
       color: const Color(0xFF00C8A0),
       url: 'https://www.7cups.com/',
@@ -1574,14 +1516,14 @@ class FeedScreenState extends State<FeedScreen> {
   final Set<int> _downvoted = {};
   String _searchQuery = '';
 
-  // FIX 4: Store the real avatarIndex loaded from Firestore
-  int _myAvatarIndex = 0;
+  // ── UPDATED: Store the real Emoji loaded from Firestore
+  String _myAvatarEmoji = '🦊';
 
   @override
   void initState() {
     super.initState();
     _catIdx = widget.initialCategoryIndex;
-    _loadMyAvatarIndex(); // FIX 4: load from Firestore instead of deriving from UID hash
+    _loadMyAvatarEmoji(); // Load emoji instead of index
     if (!_moodModalShownThisSession) {
       _moodModalShownThisSession = true;
       WidgetsBinding.instance.addPostFrameCallback(
@@ -1590,8 +1532,8 @@ class FeedScreenState extends State<FeedScreen> {
     }
   }
 
-  // FIX 4: Fetch the real avatarIndex the user chose at registration
-  Future<void> _loadMyAvatarIndex() async {
+  // ── UPDATED: Fetch the real emoji the user chose at registration
+  Future<void> _loadMyAvatarEmoji() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     try {
@@ -1601,13 +1543,14 @@ class FeedScreenState extends State<FeedScreen> {
           .get();
       if (doc.exists && doc.data() != null) {
         final data = doc.data() as Map<String, dynamic>;
-        final idx = data['avatarIndex'];
-        if (idx != null && mounted) {
-          setState(() => _myAvatarIndex = (idx as int).clamp(0, 14));
+        if (data.containsKey('avatarUrl') && mounted) {
+          setState(
+            () => _myAvatarEmoji = data['avatarUrl']?.toString() ?? '🦊',
+          );
         }
       }
     } catch (e) {
-      debugPrint('Avatar index fetch failed: $e');
+      debugPrint('Avatar fetch failed: $e');
     }
   }
 
@@ -1668,7 +1611,6 @@ class FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  // FIX 3: Mood snackbar — white text on a solid dark background for visibility
   Widget _buildMoodOption(BuildContext context, String emoji, String label) {
     return InkWell(
       onTap: () {
@@ -1681,7 +1623,6 @@ class FeedScreenState extends State<FeedScreen> {
                 const SizedBox(width: 10),
                 Text(
                   "Mood logged: $label",
-                  // FIX 3: explicit white so it's readable on the dark card bg
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -1690,8 +1631,6 @@ class FeedScreenState extends State<FeedScreen> {
                 ),
               ],
             ),
-            // FIX 3: use a slightly lighter shade than _card so the snackbar
-            // has clear contrast against both the bar background and text
             backgroundColor: const Color(0xFF243640),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
@@ -1725,8 +1664,9 @@ class FeedScreenState extends State<FeedScreen> {
 
   List<Post> get _filtered {
     var list = _posts;
-    if (_catIdx != 0)
+    if (_catIdx != 0) {
       list = list.where((p) => p.category == _categories[_catIdx]).toList();
+    }
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       list = list
@@ -1999,8 +1939,10 @@ class FeedScreenState extends State<FeedScreen> {
 
                                   String anonName =
                                       'anon_striver_${DateTime.now().millisecondsSinceEpoch % 1000}';
-                                  int anonAvatarIdx =
-                                      _myAvatarIndex; // FIX 4: use real avatar
+
+                                  // ── UPDATED: Assign Emoji string here
+                                  String anonAvatarEmoji = _myAvatarEmoji;
+
                                   final user =
                                       FirebaseAuth.instance.currentUser;
                                   if (user != null) {
@@ -2017,10 +1959,9 @@ class FeedScreenState extends State<FeedScreen> {
                                           anonName =
                                               data['username']?.toString() ??
                                               anonName;
-                                          // FIX 4: read stored avatarIndex, fall back to _myAvatarIndex
-                                          anonAvatarIdx =
-                                              (data['avatarIndex'] as int?) ??
-                                              _myAvatarIndex;
+                                          anonAvatarEmoji =
+                                              data['avatarUrl']?.toString() ??
+                                              _myAvatarEmoji;
                                         }
                                       }
                                     } catch (e) {
@@ -2042,7 +1983,7 @@ class FeedScreenState extends State<FeedScreen> {
                                         0,
                                         true,
                                         _colorForCategory(detectedCategory),
-                                        anonAvatarIdx,
+                                        anonAvatarEmoji, // Save the Emoji!
                                       ),
                                     );
                                     _catIdx = 0;
@@ -2291,8 +2232,8 @@ class FeedScreenState extends State<FeedScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              // FIX 4: uses _myAvatarIndex loaded from Firestore
-              _AvatarWidget(index: _myAvatarIndex, radius: 16),
+              // ── UPDATED: Uses Emoji
+              _AvatarWidget(emoji: _myAvatarEmoji, radius: 16),
               const SizedBox(width: 12),
               Expanded(
                 child: Container(
@@ -2367,7 +2308,8 @@ class FeedScreenState extends State<FeedScreen> {
                       padding: const EdgeInsets.all(12),
                       child: Row(
                         children: [
-                          _AvatarWidget(index: post.avatarIndex, radius: 14),
+                          // ── UPDATED: Uses Emoji
+                          _AvatarWidget(emoji: post.avatarEmoji, radius: 14),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(
@@ -2500,8 +2442,6 @@ class FeedScreenState extends State<FeedScreen> {
                 child: Image.network(
                   r.coverImageUrl,
                   fit: BoxFit.cover,
-                  // FIX 1: richer fallback — colored gradient + icon so it
-                  // never looks broken/empty even if the URL fails
                   errorBuilder: (_, __, ___) => Container(
                     height: 110,
                     decoration: BoxDecoration(
@@ -2629,7 +2569,6 @@ class FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  // FIX 1: returns a meaningful icon per resource type for the fallback UI
   IconData _iconForType(ResourceType t) {
     switch (t) {
       case ResourceType.book:
@@ -2748,7 +2687,8 @@ class _TrendingCard extends StatelessWidget {
             const Spacer(),
             Row(
               children: [
-                _AvatarWidget(index: post.avatarIndex, radius: 8),
+                // ── UPDATED: Uses Emoji
+                _AvatarWidget(emoji: post.avatarEmoji, radius: 8),
                 const SizedBox(width: 6),
                 Text(
                   'u/${post.user}',
@@ -2859,11 +2799,13 @@ class RichPostCard extends StatelessWidget {
                       "I completely relate to this. You are not alone.",
                       "anon_butterfly",
                       "2h ago",
+                      _avatarPool[11], // Emoji comment 1
                     ),
                     _buildDummyComment(
                       "Hang in there! Things will get better.",
                       "brave_striver",
                       "5h ago",
+                      _avatarPool[8], // Emoji comment 2
                     ),
                   ],
                 ),
@@ -2904,17 +2846,19 @@ class RichPostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDummyComment(String text, String user, String time) {
+  Widget _buildDummyComment(
+    String text,
+    String user,
+    String time,
+    String emoji,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CircleAvatar(
-            radius: 14,
-            backgroundColor: Color(0xFF37474F),
-            child: Icon(Icons.person, size: 14, color: Colors.white70),
-          ),
+          // ── UPDATED: Uses Emoji for comments
+          _AvatarWidget(emoji: emoji, radius: 14),
           const SizedBox(width: 12),
           Expanded(
             child: Container(
@@ -3012,7 +2956,8 @@ class RichPostCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      _AvatarWidget(index: post.avatarIndex, radius: 10),
+                      // ── UPDATED: Uses Emoji for feed posts
+                      _AvatarWidget(emoji: post.avatarEmoji, radius: 10),
                       const SizedBox(width: 8),
                       Text(
                         'u/${post.user} • ${post.time}',

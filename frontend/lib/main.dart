@@ -71,8 +71,7 @@ class _RootScreenState extends State<RootScreen> {
 
   // 🚨 1. Add variables to hold the live user data
   String _username = "Loading...";
-  String _avatarUrl =
-      "https://api.dicebear.com/8.x/notionists/png?seed=fallback";
+  String _avatarUrl = "🦊";
 
   // 🚨 2. Fetch the data as soon as the screen loads
   @override
@@ -253,9 +252,10 @@ class _RootScreenState extends State<RootScreen> {
                         CircleAvatar(
                           radius: 10,
                           backgroundColor: Colors.white10,
-                          backgroundImage: NetworkImage(
-                            _avatarUrl,
-                          ), // Uses Live Avatar
+                          child: Text(
+                            _avatarUrl, // Draws the emoji as text!
+                            style: const TextStyle(fontSize: 14),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(
